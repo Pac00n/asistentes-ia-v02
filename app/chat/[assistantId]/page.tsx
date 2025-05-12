@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { getAssistantById } from "@/lib/assistants"
-import { ArrowLeft, Send } from "lucide-react"
+import { ArrowLeft, Send, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 type Message = {
@@ -167,10 +167,10 @@ export default function ChatPage() {
       }
 
       setMessages((prev) => [...prev, assistantMessage])
-    } catch (error) {
-      console.error("Error al enviar mensaje:", error)
-      // Guardar el error para mostrarlo en la UI
-      setError(error.message)
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message);
+      console.error("Error en la conversación:", error);
 
       // Mostrar mensaje de error
       setMessages((prev) => [
@@ -238,30 +238,20 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b py-4 px-4 sm:px-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/assistants">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${assistant.bgColor}`}>
-              {assistant.icon}
-            </div>
-            <div>
-              <h1 className="font-medium text-lg">{assistant.name}</h1>
-              <p className="text-sm text-gray-500">{assistant.shortDescription}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            {useDirectApi && (
-              <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Usando API directa</span>
-            )}
-            <Button variant="outline" size="sm" onClick={startNewConversation}>
-              Nueva conversación
-            </Button>
-          </div>
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-3 bg-gradient-to-r from-blue-50/90 to-white/90 backdrop-blur-sm border-b border-gray-200/60 transition-all duration-200">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <ArrowLeft className="h-5 w-5 text-gray-700" />
+          <span className="text-lg font-medium text-gray-800">Volver</span>
+        </Link>
+        
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={startNewConversation}
+            variant="outline"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Nueva conversación
+          </Button>
         </div>
       </header>
 
@@ -279,80 +269,75 @@ export default function ChatPage() {
       )}
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-        <div className="max-w-3xl mx-auto space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`flex max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                {message.role === "user" ? (
-                  <div className="h-8 w-8 ml-3 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-full">
-                    U
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-3xl mx-auto space-y-4">
+            {messages.map((message) => (
+              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`flex max-w-[80%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                  {message.role === "user" ? (
+                    <div className="h-8 w-8 ml-3 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-full">
+                      U
+                    </div>
+                  ) : (
+                    <div className={`h-8 w-8 mr-3 ${assistant.bgColor} flex items-center justify-center rounded-full`}>
+                      {assistant.name.charAt(0)}
+                    </div>
+                  )}
+                  <div 
+                    className={`rounded-lg p-4 shadow-sm transition-all relative ${message.role === "user" 
+                      ? "bg-blue-600 text-white" 
+                      : "bg-white border border-gray-200 shadow-sm"} ${message.id === "welcome" ? "ring-1 ring-blue-300 animate-pulse" : ""}`}
+                  >
+                    {message.id === "welcome" && (
+                      <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-500 animate-ping"></div>
+                    )}
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className={`text-xs mt-1 ${message.role === "user" ? "text-blue-100" : "text-gray-500"}`}>
+                      {formatTime(message.timestamp)}
+                    </div>
                   </div>
-                ) : (
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex">
                   <div className={`h-8 w-8 mr-3 ${assistant.bgColor} flex items-center justify-center rounded-full`}>
-                    A
+                    {assistant.name.charAt(0)}
                   </div>
-                )}
-                <div
-                  className={`rounded-lg p-3 ${
-                    message.role === "user" ? "bg-emerald-600 text-white" : "bg-white border border-gray-200"
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap">{message.content}</div>
-                  <div className={`text-xs mt-1 ${message.role === "user" ? "text-emerald-100" : "text-gray-400"}`}>
-                    {formatTime(message.timestamp)}
+                  <div className="rounded-lg p-3 bg-white border border-gray-200 flex items-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex">
-                <div className={`h-8 w-8 mr-3 ${assistant.bgColor} flex items-center justify-center rounded-full`}>
-                  A
-                </div>
-                <div className="rounded-lg p-3 bg-white border border-gray-200">
-                  <div className="flex space-x-2">
-                    <div
-                      className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
       {/* Input Form */}
-      <div className="bg-white border-t p-4 sm:p-6">
+      <div className="bg-white border-t p-4 sm:p-6 sticky bottom-0 transition-all duration-200 ease-in-out">
         <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSubmit} className="flex space-x-2">
+          <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Escribe tu mensaje..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 rounded-lg shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
-              <Send className="h-4 w-4 mr-2" />
-              Enviar
+            <Button 
+              type="submit" 
+              disabled={isLoading || !input.trim()}
+              className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            >
+              <Send className="h-4 w-4" />
             </Button>
           </form>
           <div className="mt-2 text-xs text-gray-500 text-center">
-            Tus conversaciones se guardan para mejorar la experiencia.
+            {isLoading ? 'Procesando tu mensaje...' : 'Tus conversaciones se guardan para mejorar la experiencia.'}
           </div>
         </div>
       </div>

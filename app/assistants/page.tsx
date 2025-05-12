@@ -7,24 +7,27 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Search } from "lucide-react"
 import { assistants } from "@/lib/assistants"
 import { IconRenderer } from "@/components/ui/icon-renderer"
+import RotatingLogoStacked from "../components/RotatingLogoStacked"
 
 export default function AssistantsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Nuestros Asistentes</h1>
-          <p className="text-xl text-blue-50 max-w-2xl">
-            Explora nuestra colección de asistentes especializados diseñados para ayudarte en diferentes áreas.
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-neutral-950 text-white">
+      {/* Hero Section con Logo Giratorio */}
+      <section className="w-full flex flex-col items-center pt-4 pb-10 mt-0">
+        <RotatingLogoStacked />
+        
+        <h1 className="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight text-center bg-gradient-to-br from-white via-blue-100 to-blue-300 bg-clip-text text-transparent drop-shadow-xl">Nuestros Asistentes</h1>
+        
+        <p className="text-lg md:text-xl text-white max-w-2xl mx-auto mb-6 text-center font-medium drop-shadow-md">
+          Explora nuestra colección de asistentes especializados diseñados para ayudarte en diferentes áreas.
+        </p>
+      </section>
 
-      <div className="container mx-auto max-w-6xl py-12 px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Todos los asistentes</h2>
-            <p className="text-gray-600">Selecciona el asistente que mejor se adapte a tus necesidades</p>
+            <h2 className="text-3xl font-bold text-white mb-2">Todos los asistentes</h2>
+            <p className="text-gray-300">Selecciona el asistente que mejor se adapte a tus necesidades</p>
           </div>
           <div className="mt-4 md:mt-0">
             <div className="relative">
@@ -32,42 +35,38 @@ export default function AssistantsPage() {
               <input
                 type="text"
                 placeholder="Buscar asistentes..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 bg-neutral-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {assistants.map((assistant) => (
-            <Card key={assistant.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card 
+              key={assistant.id} 
+              className="bg-neutral-900/80 rounded-xl border border-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm p-6 hover:-translate-y-0.5"
+            >
               <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${assistant.bgColor}`}>
+                <div className="flex justify-center">
+                  <div className={`w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4`}>
                     {/* Renderizar el icono basado en iconType */}
-                    <IconRenderer iconType={assistant.iconType} className="h-6 w-6 text-white" size={24} />
+                    <IconRenderer iconType={assistant.iconType} className="h-6 w-6 text-blue-600" size={24} />
                   </div>
-                  <Badge variant={assistant.badgeVariant}>{assistant.category}</Badge>
                 </div>
-                <CardTitle className="mt-4">{assistant.name}</CardTitle>
-                <CardDescription>{assistant.shortDescription}</CardDescription>
+                <CardTitle className="text-xl font-semibold mb-2 text-white text-center">{assistant.name}</CardTitle>
+                <CardDescription className="text-center text-gray-300">{assistant.shortDescription}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">{assistant.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {assistant.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="bg-gray-100">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-gray-300">{assistant.description}</p>
               </CardContent>
-              <CardFooter className="border-t pt-4 flex justify-between">
-                <div className="text-sm text-gray-500">{assistant.messageCount} mensajes este mes</div>
-                <Button asChild variant="ghost" size="sm">
-                  <Link href={`/chat/${assistant.id}`}>
-                    Chatear
-                    <ArrowRight className="ml-2 h-4 w-4" />
+              <CardFooter className="border-t border-gray-800 pt-4 flex justify-center">
+                <Button asChild className="relative group bg-white rounded-full px-6 py-2">
+                  <Link href={`/chat/${assistant.id}`} className="relative z-10 flex items-center">
+                    <span className="text-black font-bold">Chatear</span>
+                    <ArrowRight className="ml-2 h-4 w-4 text-black" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-400 transition-all duration-300"></div>
+                    <div className="absolute -inset-px rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 8px 2px rgba(96, 165, 250, 0.5)' }}></div>
                   </Link>
                 </Button>
               </CardFooter>
