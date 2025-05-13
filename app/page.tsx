@@ -18,12 +18,12 @@ export default function Home() {
         <p className="text-lg md:text-2xl text-white max-w-2xl mx-auto mb-6 text-center font-medium drop-shadow-md">La plataforma de IA premium donde la productividad y la creatividad se encuentran.</p>
         
         <div className="flex justify-center mt-6">
+          {/* Modificado: Se eliminaron los divs decorativos internos del Link */}
           <Button asChild className="mt-4 px-8 py-3 text-lg font-bold rounded-full relative group bg-white">
             <Link href="/assistants" className="relative z-10 flex items-center">
               <span className="text-black font-bold">Ver asistentes</span>
               <ArrowRight className="ml-2 h-5 w-5 text-black" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-400 transition-all duration-300"></div>
-              <div className="absolute -inset-px rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 8px 2px rgba(96, 165, 250, 0.5)' }}></div>
+              {/* Los divs para el efecto hover han sido eliminados para la prueba */}
             </Link>
           </Button>
         </div>

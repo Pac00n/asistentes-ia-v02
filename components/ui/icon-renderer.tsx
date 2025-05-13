@@ -1,21 +1,21 @@
 "use client"
 
-import * as LucideIcons from "lucide-react"
-import { LucideProps } from "lucide-react"
+import React from "react";
+import { LucideProps, HelpCircle } from "lucide-react"; // Importar HelpCircle para fallback
 
 interface IconRendererProps {
-  iconType: string
-  className?: string
-  size?: number
+  // Cambiado de string a React.ElementType
+  iconType: React.ElementType;
+  className?: string;
+  size?: number;
 }
 
-export function IconRenderer({ iconType, className = "", size = 24 }: IconRendererProps) {
-  // Convert kebab-case to PascalCase if needed (e.g., "file-text" to "FileText")
-  const iconName = iconType.split("-").map(part => part.charAt(0).toUpperCase() + part.slice(1)).join("");
-  
-  // Access the Lucide icon by its name
-  // Cast to any to avoid TypeScript issues with dynamic access
-  const LucideIcon = (LucideIcons as any)[iconName] || LucideIcons.HelpCircle; // Fallback icon
+export function IconRenderer({ iconType: IconComponent, className = "", size = 24 }: IconRendererProps) {
+  // Ya no necesitamos convertir el nombre, recibimos el componente directamente.
+  // Renombramos iconType a IconComponent para usarlo como JSX Tag.
 
-  return <LucideIcon className={className} size={size} />;
+  // Validar si el componente es válido, si no usar fallback.
+  const RenderIcon = typeof IconComponent === 'function' ? IconComponent : HelpCircle;
+
+  return <RenderIcon className={className} size={size} />;
 }

@@ -21,7 +21,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.className} text-zinc-800 bg-white`}>
+      {/* Modificado: Eliminada la clase bg-white del body */}
+      <body className={`${inter.className} text-zinc-800`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="fixed top-4 right-4 z-50">
             <ClientThemeToggleWrapper />
