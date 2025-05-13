@@ -365,7 +365,7 @@ export default function ChatPage() {
                 onClick={startNewConversation}
                 variant="outline"
                 size="sm"
-                className="border-neutral-700 text-white hover:bg-neutral-800 text-sm"
+                className="border-neutral-700 text-black hover:bg-neutral-800 hover:text-white text-sm"
               >
                 Nueva conversación
               </Button>

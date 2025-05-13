@@ -5,7 +5,7 @@ import { assistants, getAssistantById } from '@/lib/assistants';
 import { Buffer } from 'buffer';
 
 export const runtime = "nodejs";
-export const maxDuration = 90; 
+export const maxDuration = 60; // Cambiado de 90 a 60
 
 // --- Cliente OpenAI (inicialización robusta) ---
 let openai: OpenAI | null = null;
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { assistantId, message, imageBase64, threadId: existingThreadId } = body;
-    console.log(`[API Chat] Datos recibidos: assistantId=${assistantId}, message=${message ? message.substring(0,30)+"..." : "N/A"}, imageBase64=${imageBase64 ? "Presente" : "Ausente"}, threadId=${existingThreadId}`);
+    console.log(`[API Chat] Datos recibidos: assistantId=${assistantId}, message=${message ? message.substring(0,30)+"...": "N/A"}, imageBase64=${imageBase64 ? "Presente" : "Ausente"}, threadId=${existingThreadId}`);
 
     // --- Validaciones de entrada ---
     if (typeof assistantId !== 'string' || !assistantId) return NextResponse.json({ error: 'assistantId es requerido' }, { status: 400 });

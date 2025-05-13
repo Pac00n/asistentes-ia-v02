@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "next/link"; // Link sigue siendo necesario si SmallRotatingLogo no lo exporta directamente
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; 
@@ -8,11 +8,10 @@ import { ArrowRight, Search } from "lucide-react";
 import { assistants } from "@/lib/assistants";
 import { IconRenderer } from "@/components/ui/icon-renderer";
 import React, { useState, useEffect } from "react"; 
-import Image from "next/image";
-// Se elimina importación de SmallStaticLogoLink
+import Image from "next/image"; // Image sigue siendo necesario para el fondo
+import SmallRotatingLogo from "../components/SmallRotatingLogo"; // Importamos el nuevo componente
 
 export default function AssistantsPage() {
-  // Lógica para la rotación del fondo (sin cambios)
   const [rotation, setRotation] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
@@ -24,9 +23,8 @@ export default function AssistantsPage() {
   }, []);
 
   return (
-    // Contenedor principal con posicionamiento relativo
     <div className="min-h-screen bg-neutral-950 text-white relative">
-      {/* Fondo: logo girando, fijo y centrado (sin cambios) */}
+      {/* Fondo: logo girando, fijo y centrado */}
       <div
         className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none"
         style={{ filter: 'blur(12px)', opacity: 0.20 }}
@@ -46,11 +44,16 @@ export default function AssistantsPage() {
         </div>
       </div>
 
-      {/* Contenido principal con z-index mayor para estar sobre el fondo */}
+      {/* Contenido principal */}
       <div className="relative z-10">
-        {/* Sección Hero: Título y Descripción (sin logo pequeño) */}
         <section className="w-full flex flex-col items-center pt-16 pb-10 mt-0"> 
-          {/* Se elimina SmallStaticLogoLink */}
+          
+          {/* Logo Orbia pequeño, rotatorio y enlazado a la página de inicio */}
+          <div className="mb-4"> {/* Añadimos margen inferior aquí */}
+            <SmallRotatingLogo />
+          </div>
+          {/* Fin del Logo Orbia */}
+
           <h1 className="text-5xl md:text-6xl font-extrabold mb-4 tracking-tight text-center bg-gradient-to-br from-white via-blue-100 to-blue-300 bg-clip-text text-transparent drop-shadow-xl">
             Nuestros Asistentes
           </h1>
@@ -59,7 +62,7 @@ export default function AssistantsPage() {
           </p>
         </section>
 
-        {/* Sección Lista de Asistentes (sin cambios) */}
+        {/* Sección Lista de Asistentes */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Encabezado y Búsqueda */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-12">
@@ -96,7 +99,6 @@ export default function AssistantsPage() {
                   <CardDescription className="text-center text-gray-300">{assistant.shortDescription}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Verifica si description existe antes de mostrarla */}
                   {assistant.description && <p className="text-gray-300">{assistant.description}</p>} 
                 </CardContent>
                 <CardFooter className="border-t border-gray-800 pt-4 flex justify-center">
