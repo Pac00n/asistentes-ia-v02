@@ -412,28 +412,32 @@ export default function ChatPage() {
                         {assistant?.name.charAt(0)}
                       </div>
                     )}
-                    <div className={`rounded-lg shadow-md transition-all relative ${message.role === "user" ? "bg-blue-600 text-white" : "bg-neutral-800 text-gray-200 border border-neutral-700"}`}>
-                      {message.role === "user" && message.imageBase64 && (
-                        <div className="p-2 border-b border-blue-500/50"><Image src={message.imageBase64} alt="Imagen adjunta" width={200} height={150} className="rounded-md object-cover" /></div>
-                      )}
-                      {(message.content || message.isStreaming) && (
-                        <div className="p-3">
-                          <div className="whitespace-pre-wrap prose prose-sm prose-invert max-w-none">
-                            {message.role === "assistant" ? (
-                              message.isStreaming && !message.content.trim()
-                                ? <AnimatedDots />
-                                : <ReactMarkdown>{formatAssistantMessage(message.content)}</ReactMarkdown>
-                            ) : (
-                              message.content
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      <div className="w-full flex justify-center">
-                        <span className="text-xs text-gray-500 mt-1 mb-2">{formatTime(message.timestamp)}</span>
+                    {message.role === "assistant" && message.isStreaming && !message.content.trim() ? (
+                      <div className="rounded-lg shadow-md transition-all relative bg-neutral-800 text-gray-200 border border-neutral-700 px-4 py-2 flex items-center justify-center min-w-[40px] min-h-[40px]">
+                        <AnimatedDots />
                       </div>
-                      {message.id === "welcome" && <div className={`absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-400 animate-ping ${message.content ? "" : "hidden"}`}></div>}
+                    ) : (
+                      <div className={`rounded-lg shadow-md transition-all relative ${message.role === "user" ? "bg-blue-600 text-white" : "bg-neutral-800 text-gray-200 border border-neutral-700"}`}>
+                        {message.role === "user" && message.imageBase64 && (
+                          <div className="p-2 border-b border-blue-500/50"><Image src={message.imageBase64} alt="Imagen adjunta" width={200} height={150} className="rounded-md object-cover" /></div>
+                        )}
+                        {(message.content || message.isStreaming) && (
+                          <div className="p-3">
+                            <div className="whitespace-pre-wrap prose prose-sm prose-invert max-w-none">
+                              {message.role === "assistant" ? (
+                                <ReactMarkdown>{formatAssistantMessage(message.content)}</ReactMarkdown>
+                              ) : (
+                                message.content
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="w-full flex justify-center">
+                      <span className="text-xs text-gray-500 mt-1 mb-2">{formatTime(message.timestamp)}</span>
                     </div>
+                    {message.id === "welcome" && <div className={`absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-400 animate-ping ${message.content ? "" : "hidden"}`}></div>}
                   </div>
                 </motion.div>
               ))}
