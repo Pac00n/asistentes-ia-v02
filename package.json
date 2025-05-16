@@ -61,7 +61,8 @@
     "vaul": "^0.9.6",
     "ws": "latest",
     "zod": "^3.24.1",
-    "framer-motion": "^11.0.0"
+    "framer-motion": "^11.0.0",
+    "react-markdown": "^9.0.0"
   },
   "devDependencies": {
     "@types/node": "^22",
