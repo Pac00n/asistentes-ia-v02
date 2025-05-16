@@ -202,9 +202,9 @@ export default function ChatPage() {
         buffer += decoder.decode(value, { stream: true });
         let eolIndex;
         
-        // Procesar cada evento SSE (delimitado por 
+        // Procesar cada evento SSE (delimitado por '
 
-)
+')
         while ((eolIndex = buffer.indexOf('
 
 ')) !== -1) {
