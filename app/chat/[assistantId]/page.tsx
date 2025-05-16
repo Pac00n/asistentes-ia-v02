@@ -12,6 +12,7 @@ import { ArrowLeft, Send, Loader2, Paperclip, X, RefreshCw } from "lucide-react"
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 type Message = {
   id: string;
@@ -27,6 +28,15 @@ const formatAssistantMessage = (content: string): string => {
   const citationRegex = /\【.*?\】/g;
   return content.replace(citationRegex, "").trim();
 };
+
+// Animación de puntos suspensivos
+const AnimatedDots = () => (
+  <span className="inline-flex gap-0.5">
+    <span className="animate-bounce [animation-delay:-.3s]">.</span>
+    <span className="animate-bounce [animation-delay:-.15s]">.</span>
+    <span className="animate-bounce">.</span>
+  </span>
+);
 
 export default function ChatPage() {
   const params = useParams();
@@ -410,14 +420,16 @@ export default function ChatPage() {
                         <div className="p-3">
                           <div className="whitespace-pre-wrap prose prose-sm prose-invert max-w-none">
                             {message.role === "assistant" ? (
-                              <ReactMarkdown>{message.isStreaming && !message.content.trim() ? "..." : formatAssistantMessage(message.content)}</ReactMarkdown>
+                              message.isStreaming && !message.content.trim()
+                                ? <AnimatedDots />
+                                : <ReactMarkdown>{formatAssistantMessage(message.content)}</ReactMarkdown>
                             ) : (
                               message.content
                             )}
                           </div>
                         </div>
                       )}
-                      <div className={`text-xs px-3 pb-2 ${message.role === "user" ? "text-blue-200/80" : "text-gray-400/80"} ${(message.content || message.isStreaming) ? "mt-1" : ""}`}>
+                      <div className={`text-xs px-3 pb-2 ${message.role === "user" ? "text-blue-200/80" : "text-gray-400/80"} text-right w-full`} style={{marginTop: '-8px'}}>
                         {formatTime(message.timestamp)}
                       </div>
                       {message.id === "welcome" && <div className={`absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-400 animate-ping ${message.content ? "" : "hidden"}`}></div>}
@@ -434,8 +446,8 @@ export default function ChatPage() {
                 <div className="flex items-center">
                   <div className={`h-8 w-8 mr-2 sm:mr-3 ${assistant.bgColor || 'bg-sky-600'} text-white flex items-center justify-center rounded-full font-semibold flex-shrink-0 shadow-md`}>{assistant?.name.charAt(0)}</div>
                   <div className="rounded-lg p-3 bg-neutral-800 border border-neutral-700 flex items-center shadow-md">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                    <span className="ml-2 text-sm text-gray-400">Conectando...</span>
+                    <AnimatedDots />
+                    <span className="ml-2 text-sm text-gray-400">Conectando</span>
                   </div>
                 </div>
               </motion.div>
@@ -446,14 +458,21 @@ export default function ChatPage() {
 
         <div className="bg-neutral-900/80 backdrop-blur-md border-t border-neutral-800 p-3 sm:p-4 sticky bottom-0 z-40 transition-all duration-200 ease-in-out">
           <div className="max-w-3xl mx-auto">
-            <div className="flex justify-between items-center mb-2 sm:mb-3 px-1">
-              <Link href="/assistants" className="flex items-center gap-2 hover:opacity-80 transition-opacity text-sm text-gray-300 hover:text-white">
-                <ArrowLeft className="h-4 w-4" /><span>Volver</span>
-              </Link>
-              <Button onClick={startNewConversation} variant="outline" size="sm" className="border-neutral-700 text-gray-300 hover:bg-neutral-800 hover:text-white text-sm">
-                <RefreshCw className="h-3 w-3 mr-2" />Nueva conversación
-              </Button>
-            </div>
+            <TooltipProvider>
+              <div className="flex justify-between items-center mb-2 sm:mb-3 px-1">
+                <Link href="/assistants" className="flex items-center gap-2 hover:opacity-80 transition-opacity text-sm text-gray-300 hover:text-white">
+                  <ArrowLeft className="h-4 w-4" /><span>Volver</span>
+                </Link>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={startNewConversation} variant="outline" size="sm" className="border-neutral-700 text-gray-300 hover:bg-blue-600 hover:text-white text-sm transition-all duration-200 shadow-md hover:scale-105 focus:scale-105">
+                      <RefreshCw className="h-3 w-3 mr-2" />Nueva conversación
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Inicia una nueva conversación, borrando el historial actual</TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
             <AnimatePresence>
               {imageBase64 && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="relative mb-2 p-2 border border-neutral-700 rounded-md max-w-[100px] bg-neutral-800/50">
