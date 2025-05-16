@@ -202,12 +202,8 @@ export default function ChatPage() {
         buffer += decoder.decode(value, { stream: true });
         let eolIndex;
         
-        // Procesar cada evento SSE (delimitado por '
-
-')
-        while ((eolIndex = buffer.indexOf('
-
-')) !== -1) {
+        // Procesar cada evento SSE (delimitado por '\n\n')
+        while ((eolIndex = buffer.indexOf('\n\n')) !== -1) {
           const line = buffer.substring(0, eolIndex).trim();
           buffer = buffer.substring(eolIndex + 2);
 
