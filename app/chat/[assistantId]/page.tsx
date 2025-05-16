@@ -29,12 +29,44 @@ const formatAssistantMessage = (content: string): string => {
   return content.replace(citationRegex, "").trim();
 };
 
-// Animación de puntos suspensivos
+// Inyectar CSS para animaciones personalizadas
+<style jsx global>{`
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+}
+.animated-dot {
+  display: inline-block;
+  animation: bounce-dot 1.4s infinite both;
+}
+.animated-dot:nth-child(1) { animation-delay: 0s; }
+.animated-dot:nth-child(2) { animation-delay: 0.2s; }
+.animated-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes spin-slow {
+  100% { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 2.5s linear infinite; }
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.btn-gradient-animated {
+  background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #3b82f6);
+  background-size: 200% 200%;
+  animation: gradient-move 3s linear infinite;
+  box-shadow: 0 2px 16px 0 rgba(16,185,129,0.15);
+}
+.btn-gradient-animated:hover {
+  filter: brightness(1.1) saturate(1.2);
+}
+`}</style>
+
+// Redefinir AnimatedDots para usar las nuevas clases
 const AnimatedDots = () => (
   <span className="inline-flex gap-0.5">
-    <span className="animate-bounce [animation-delay:-.3s]">.</span>
-    <span className="animate-bounce [animation-delay:-.15s]">.</span>
-    <span className="animate-bounce">.</span>
+    <span className="animated-dot">.</span>
+    <span className="animated-dot">.</span>
+    <span className="animated-dot">.</span>
   </span>
 );
 
@@ -469,8 +501,8 @@ export default function ChatPage() {
                 </Link>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={startNewConversation} type="button" className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-emerald-400 text-white font-bold shadow-lg hover:scale-105 hover:from-blue-600 hover:to-emerald-500 transition-all duration-200 text-base">
-                      <span className="animate-spin-slow"><RefreshCw className="h-5 w-5" /></span>
+                    <Button onClick={startNewConversation} type="button" className="btn-gradient-animated flex items-center gap-2 px-5 py-2 rounded-full text-white font-bold shadow-lg hover:scale-105 transition-all duration-200 text-base">
+                      <span className="spin-slow"><RefreshCw className="h-5 w-5" /></span>
                       Nueva conversación
                     </Button>
                   </TooltipTrigger>
