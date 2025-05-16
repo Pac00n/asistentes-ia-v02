@@ -429,8 +429,8 @@ export default function ChatPage() {
                           </div>
                         </div>
                       )}
-                      <div className={`text-xs px-3 pb-2 ${message.role === "user" ? "text-blue-200/80" : "text-gray-400/80"} text-right w-full`} style={{marginTop: '-8px'}}>
-                        {formatTime(message.timestamp)}
+                      <div className="w-full flex justify-center">
+                        <span className="text-xs text-gray-500 mt-1 mb-2">{formatTime(message.timestamp)}</span>
                       </div>
                       {message.id === "welcome" && <div className={`absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-400 animate-ping ${message.content ? "" : "hidden"}`}></div>}
                     </div>
@@ -465,8 +465,9 @@ export default function ChatPage() {
                 </Link>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={startNewConversation} variant="outline" size="sm" className="border-neutral-700 text-gray-300 hover:bg-blue-600 hover:text-white text-sm transition-all duration-200 shadow-md hover:scale-105 focus:scale-105">
-                      <RefreshCw className="h-3 w-3 mr-2" />Nueva conversación
+                    <Button onClick={startNewConversation} type="button" className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-emerald-400 text-white font-bold shadow-lg hover:scale-105 hover:from-blue-600 hover:to-emerald-500 transition-all duration-200 text-base">
+                      <span className="animate-spin-slow"><RefreshCw className="h-5 w-5" /></span>
+                      Nueva conversación
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Inicia una nueva conversación, borrando el historial actual</TooltipContent>
