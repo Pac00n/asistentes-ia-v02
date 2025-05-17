@@ -501,11 +501,16 @@ export default function ChatPage() {
                 </Link>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={startNewConversation} type="button" className="btn-gradient-animated flex items-center gap-2 px-5 py-2 rounded-full text-white font-bold shadow-lg hover:scale-105 transition-all duration-200 text-base">
-                      <span className="spin-slow"><RefreshCw className="h-5 w-5" /></span>
-                      Nueva conversación
-                    </Button>
-                  </TooltipTrigger>
+  <Button
+    onClick={startNewConversation}
+    type="button"
+    className="btn-gradient-animated flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-extrabold shadow-2xl hover:scale-105 hover:brightness-110 focus-visible:ring-4 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 transition-all duration-200 text-base border-2 border-white/10 outline-none"
+    style={{ boxShadow: '0 4px 32px 0 rgba(16,185,129,0.25), 0 2px 8px 0 rgba(59,130,246,0.10)' }}
+  >
+    <span className="spin-slow"><RefreshCw className="h-5 w-5" /></span>
+    Nueva conversación
+  </Button>
+</TooltipTrigger>
                   <TooltipContent>Inicia una nueva conversación, borrando el historial actual</TooltipContent>
                 </Tooltip>
               </div>
