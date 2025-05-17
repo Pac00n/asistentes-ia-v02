@@ -25,6 +25,16 @@ export async function POST(req: Request) {
     if (!assistant) {
       return NextResponse.json({ error: "Asistente no encontrado" }, { status: 404 })
     }
+    
+    // Usar el ID real del asistente de OpenAI de nuestra configuración interna
+    const openaiAssistantId = assistant.openaiAssistantId;
+
+    // VERIFICACIÓN EXPLÍCITA AÑADIDA:
+    if (!openaiAssistantId) {
+      console.error(`Error crítico: El asistente con ID interno '${assistant.id}' y nombre '${assistant.name}' no tiene un 'openaiAssistantId' configurado en lib/assistants.ts.`);
+      return NextResponse.json({ error: `Configuración interna inválida para el asistente '${assistant.name}'. Falta el ID de OpenAI.` }, { status: 500 });
+    }
+    // FIN DE LA VERIFICACIÓN AÑADIDA
 
     // Inicializar el cliente de OpenAI
     if (!process.env.OPENAI_API_KEY) {
@@ -72,15 +82,13 @@ export async function POST(req: Request) {
     })
     console.log(`Mensaje añadido al thread: ${message}`)
 
-    const openaiAssistantId = assistant.openaiAssistantId
-
     // Obtener herramientas MCP para OpenAI
     const mcpToolsForOpenAI = await mcpAdapter.getToolsForAssistant(assistantId);
     console.log(`Herramientas MCP para OpenAI: ${JSON.stringify(mcpToolsForOpenAI, null, 2)}`);
 
     // Crear el Run con las herramientas MCP
     const run = await openai.beta.threads.runs.create(currentThreadId, {
-      assistant_id: openaiAssistantId,
+      assistant_id: openaiAssistantId, // Usar la variable verificada
       tools: mcpToolsForOpenAI.length > 0 ? mcpToolsForOpenAI : undefined,
     })
     console.log(`Run creado: ${run.id}`)
@@ -111,7 +119,6 @@ export async function POST(req: Request) {
                 functionArgs = JSON.parse(toolCall.function.arguments);
               } catch (parseError) {
                 console.error(`Error parseando argumentos para ${functionName}:`, parseError);
-                // Considerar cómo manejar este error. ¿Enviar un error como output?
               }
               
               if (functionName.startsWith('mcp_')) {
@@ -149,8 +156,6 @@ export async function POST(req: Request) {
               console.log(`Tool outputs enviados. Nuevo estado del run: ${currentRun.status}`);
             } catch (submitError) {
               console.error("Error enviando tool outputs:", submitError);
-              // Decidir cómo manejar este error. ¿Romper el bucle? ¿Intentar de nuevo?
-              // Por ahora, el bucle continuará y probablemente el run expirará o fallará.
               return NextResponse.json(
                 { error: "Error enviando resultados de herramientas a OpenAI", details: submitError.message },
                 { status: 500 }
@@ -158,7 +163,6 @@ export async function POST(req: Request) {
             }
           }
         } else {
-          // Si required_action no es submit_tool_outputs, manejarlo o loggearlo.
            console.error("Run requiere una acción desconocida o no manejada:", requiredAction);
            return NextResponse.json(
              { error: "El asistente requiere una acción desconocida." },
@@ -170,7 +174,6 @@ export async function POST(req: Request) {
 
     if (currentRun.status !== "completed") {
       console.error(`Run no completado. Estado final: ${currentRun.status}. Required Action: ${JSON.stringify(currentRun.required_action)}`)
-      // No devolver el error 501 si ya hemos intentado manejar requires_action
       return NextResponse.json(
         {
           error: `Error en la ejecución del asistente: ${currentRun.status}`,
