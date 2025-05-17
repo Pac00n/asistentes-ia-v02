@@ -11,6 +11,8 @@ export const runtime = "nodejs"
 export const maxDuration = 60
 
 export async function POST(req: Request) {
+  // LOG DE PRUEBA V3
+  console.log("--- ROUTE-NODE.TS V3 EXECUTION --- API Chat Endpoint Start ---");
   try {
     // Añadir employeeToken a la desestructuración si se espera del frontend
     const { assistantId, message, threadId, employeeToken } = await req.json()
@@ -61,13 +63,9 @@ export async function POST(req: Request) {
       console.log("MCPAdapter inicializado correctamente.");
     } catch (initError) {
       console.error("Error inicializando MCPAdapter:", initError);
-      // Podrías decidir si continuar sin herramientas MCP o devolver un error
-      // Por ahora, continuaremos y las herramientas MCP podrían estar vacías.
     }
 
-    // Gestionar el Thread (Hilo)
     let currentThreadId = threadId
-
     if (!currentThreadId) {
       const thread = await openai.beta.threads.create()
       currentThreadId = thread.id
@@ -82,13 +80,11 @@ export async function POST(req: Request) {
     })
     console.log(`Mensaje añadido al thread: ${message}`)
 
-    // Obtener herramientas MCP para OpenAI
     const mcpToolsForOpenAI = await mcpAdapter.getToolsForAssistant(assistantId);
     console.log(`Herramientas MCP para OpenAI: ${JSON.stringify(mcpToolsForOpenAI, null, 2)}`);
 
-    // Crear el Run con las herramientas MCP
     const run = await openai.beta.threads.runs.create(currentThreadId, {
-      assistant_id: openaiAssistantId, // Usar la variable verificada
+      assistant_id: openaiAssistantId, 
       tools: mcpToolsForOpenAI.length > 0 ? mcpToolsForOpenAI : undefined,
     })
     console.log(`Run creado: ${run.id}`)
@@ -103,7 +99,6 @@ export async function POST(req: Request) {
       currentRun = await openai.beta.threads.runs.retrieve(currentThreadId, run.id)
       console.log(`Estado del run (intento ${attempts}): ${currentRun.status}`)
 
-      // Manejar 'requires_action' para tool calls
       if (currentRun.status === "requires_action") {
         console.log("Run requiere acción. Procesando tool calls...");
         const requiredAction = currentRun.required_action;
@@ -129,7 +124,7 @@ export async function POST(req: Request) {
                   functionArgs,
                   assistantId, 
                   currentThreadId,
-                  employeeToken // Pasar el employeeToken como userIdentifier
+                  employeeToken 
                 );
                 toolOutputs.push({
                   tool_call_id: toolCall.id,
@@ -170,7 +165,7 @@ export async function POST(req: Request) {
            );
         }
       }
-    } // Fin del while loop
+    } 
 
     if (currentRun.status !== "completed") {
       console.error(`Run no completado. Estado final: ${currentRun.status}. Required Action: ${JSON.stringify(currentRun.required_action)}`)
