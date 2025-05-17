@@ -33,11 +33,15 @@ const formatAssistantMessage = (content: string): string => {
 <style jsx global>{`
 @keyframes bounce-dot {
   0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
+  40% { transform: translateY(-6px); }
 }
 .animated-dot {
   display: inline-block;
-  animation: bounce-dot 1.4s infinite both;
+  animation: bounce-dot 1.2s infinite ease-in-out both;
+  font-size: 24px;
+  line-height: 12px;
+  font-weight: bold;
+  color: white;
 }
 .animated-dot:nth-child(1) { animation-delay: 0s; }
 .animated-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -54,11 +58,14 @@ const formatAssistantMessage = (content: string): string => {
   background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #3b82f6);
   background-size: 300% 100%;
   animation: gradient-move 4s ease infinite;
-  box-shadow: 0 4px 20px 0 rgba(16,185,129,0.3);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px 0 rgba(16,185,129,0.4);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
   font-weight: 700;
-  border: 2px solid rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.2);
   transition: all 0.3s ease;
+  color: white !important;
+  /* Color de fondo base más oscuro para mejor visibilidad */
+  background-color: #2563eb;
 }
 .btn-gradient-animated:hover {
   filter: brightness(1.2) saturate(1.3);
@@ -551,7 +558,8 @@ export default function ChatPage() {
             <div className="fixed right-5 bottom-24 z-50">
               <Button
                 onClick={startNewConversation}
-                className="btn-gradient-animated flex items-center gap-2 px-5 py-2.5 rounded-full text-white shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                className="btn-gradient-animated flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-bold shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                style={{ backgroundColor: '#2563eb' }} /* Añadir color base para asegurar visibilidad */
               >
                 <span className="spin-slow"><RefreshCw className="h-4 w-4" /></span>
                 Nueva conversación
