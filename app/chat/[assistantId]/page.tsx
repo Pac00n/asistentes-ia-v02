@@ -52,12 +52,26 @@ const formatAssistantMessage = (content: string): string => {
 }
 .btn-gradient-animated {
   background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #3b82f6);
-  background-size: 200% 200%;
-  animation: gradient-move 3s linear infinite;
-  box-shadow: 0 2px 16px 0 rgba(16,185,129,0.15);
+  background-size: 300% 100%;
+  animation: gradient-move 4s ease infinite;
+  box-shadow: 0 4px 20px 0 rgba(16,185,129,0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.15);
+  transition: all 0.3s ease;
 }
 .btn-gradient-animated:hover {
-  filter: brightness(1.1) saturate(1.2);
+  filter: brightness(1.2) saturate(1.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px 0 rgba(16,185,129,0.4);
+}
+.timestamp-outside {
+  display: block;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 `}</style>
 
@@ -467,7 +481,7 @@ export default function ChatPage() {
                       </div>
                     )}
                     <div className="w-full flex justify-center">
-                      <span className="text-xs text-gray-500 mt-1 mb-2">{formatTime(message.timestamp)}</span>
+                      <span className="timestamp-outside">{formatTime(message.timestamp)}</span>
                     </div>
                     {message.id === "welcome" && <div className={`absolute -top-1 -right-1 h-2 w-2 rounded-full bg-blue-400 animate-ping ${message.content ? "" : "hidden"}`}></div>}
                   </div>
@@ -499,20 +513,6 @@ export default function ChatPage() {
                 <Link href="/assistants" className="flex items-center gap-2 hover:opacity-80 transition-opacity text-sm text-gray-300 hover:text-white">
                   <ArrowLeft className="h-4 w-4" /><span>Volver</span>
                 </Link>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-  <Button
-    onClick={startNewConversation}
-    type="button"
-    className="btn-gradient-animated flex items-center gap-2 px-6 py-2.5 rounded-full text-white font-extrabold shadow-2xl hover:scale-105 hover:brightness-110 focus-visible:ring-4 focus-visible:ring-blue-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 transition-all duration-200 text-base border-2 border-white/10 outline-none"
-    style={{ boxShadow: '0 4px 32px 0 rgba(16,185,129,0.25), 0 2px 8px 0 rgba(59,130,246,0.10)' }}
-  >
-    <span className="spin-slow"><RefreshCw className="h-5 w-5" /></span>
-    Nueva conversación
-  </Button>
-</TooltipTrigger>
-                  <TooltipContent>Inicia una nueva conversación, borrando el historial actual</TooltipContent>
-                </Tooltip>
               </div>
             </TooltipProvider>
             <AnimatePresence>
@@ -547,6 +547,15 @@ export default function ChatPage() {
             </form>
             <div className="mt-2 text-xs text-gray-500 text-center">
               {isLoading && messages.some(m=>m.isStreaming) ? 'Asistente está respondiendo...' : isLoading ? 'Procesando...' : 'Las conversaciones se guardan en este navegador.'}
+            </div>
+            <div className="fixed right-5 bottom-24 z-50">
+              <Button
+                onClick={startNewConversation}
+                className="btn-gradient-animated flex items-center gap-2 px-5 py-2.5 rounded-full text-white shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+              >
+                <span className="spin-slow"><RefreshCw className="h-4 w-4" /></span>
+                Nueva conversación
+              </Button>
             </div>
           </div>
         </div>
