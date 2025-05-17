@@ -1,0 +1,1 @@
+{"id":"req_3","action":"call_tool","data":{"tool_name":"get_weather_forecast","parameters":{"location":"Madrid, Spain","unit":"celsius"}}}

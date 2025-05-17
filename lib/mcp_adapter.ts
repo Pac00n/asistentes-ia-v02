@@ -1,6 +1,8 @@
 // lib/mcp_adapter.ts
 import { SupabaseClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import { IMCPClient } from './mcp_clients/base';
+import { MCPClientFactory } from './mcp_clients/factory';
 
 // Tipos para los datos de Supabase (simplificados por ahora)
 interface McpServer {
@@ -39,12 +41,14 @@ interface OpenAITool {
 export class MCPAdapter {
   private supabase: SupabaseClient;
   private openai: OpenAI;
-  private mcpClients: Map<string, any>; // Simulará clientes MCP por serverId
+  private clientFactory: MCPClientFactory;
+  private mcpClients: Map<string, IMCPClient>; // Clientes MCP por serverId
   private toolsCache: Map<string, { mcpTools: McpTool[], openAITools: OpenAITool[] }>;
 
   constructor(supabaseClient: SupabaseClient, openaiClient: OpenAI) {
     this.supabase = supabaseClient;
     this.openai = openaiClient;
+    this.clientFactory = new MCPClientFactory(supabaseClient);
     this.mcpClients = new Map();
     this.toolsCache = new Map();
     console.log("MCPAdapter instantiated");
@@ -79,51 +83,79 @@ export class MCPAdapter {
   }
 
   /**
-   * Simula la conexión a un servidor MCP y carga sus herramientas.
-   * Para servidores 'fictional', solo carga las herramientas desde Supabase.
+   * Conecta a un servidor MCP y carga sus herramientas.
+   * Utiliza la fábrica de clientes para crear el cliente apropiado según el tipo de servidor.
    */
   private async connectToServer(serverConfig: McpServer): Promise<void> {
     console.log(`MCPAdapter: Connecting to server ${serverConfig.name} (ID: ${serverConfig.id}, Type: ${serverConfig.type})`);
-    if (serverConfig.type === 'fictional') {
-      // Para servidores ficticios, no hay conexión real, solo cargamos herramientas.
-      this.mcpClients.set(serverConfig.id, { status: 'connected', type: 'fictional' });
+    try {
+      // Crear cliente MCP a través de la fábrica
+      const client = await this.clientFactory.createClient(serverConfig);
+      
+      // Conectar al servidor
+      await client.connect();
+      
+      // Almacenar el cliente en caché
+      this.mcpClients.set(serverConfig.id, client);
+      
+      // Cargar herramientas del servidor
       await this.cacheServerTools(serverConfig.id);
-      console.log(`MCPAdapter: Successfully "connected" to fictional server ${serverConfig.name} and cached its tools.`);
-    } else {
-      // Aquí iría la lógica para conectar a servidores stdio o sse reales en el futuro.
-      console.warn(`MCPAdapter: Connection logic for server type '${serverConfig.type}' is not yet implemented.`);
-      this.mcpClients.set(serverConfig.id, { status: 'not_implemented', type: serverConfig.type });
+      
+      console.log(`MCPAdapter: Successfully connected to ${serverConfig.type} server ${serverConfig.name} and cached its tools.`);
+    } catch (error) {
+      console.error(`MCPAdapter: Error connecting to server ${serverConfig.name}:`, error);
+      throw new Error(`Failed to connect to server ${serverConfig.name}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   /**
-   * Carga las herramientas de un servidor MCP específico desde Supabase,
+   * Carga las herramientas de un servidor MCP específico,
    * las traduce al formato de OpenAI y las almacena en caché.
+   * Para servidores reales, obtiene las herramientas del cliente MCP.
+   * Para servidores ficticios, carga las herramientas desde Supabase.
    */
   private async cacheServerTools(serverId: string): Promise<void> {
     console.log(`MCPAdapter: Caching tools for server ID: ${serverId}`);
-    const { data: mcpToolsData, error } = await this.supabase
-      .from('mcp_tools')
-      .select('*')
-      .eq('server_id', serverId);
-
-    if (error) {
-      console.error(`MCPAdapter: Error loading tools for server ${serverId}:`, error);
-      this.toolsCache.delete(serverId); // Limpiar caché si hay error
-      return;
-    }
-
-    if (!mcpToolsData || mcpToolsData.length === 0) {
-      console.warn(`MCPAdapter: No tools found for server ${serverId}.`);
-      this.toolsCache.set(serverId, { mcpTools: [], openAITools: [] });
-      return;
-    }
-
-    const mcpTools = mcpToolsData as McpTool[];
-    const openAITools = mcpTools.map(tool => this.translateToolToOpenAIFormat(tool, serverId));
     
-    this.toolsCache.set(serverId, { mcpTools, openAITools });
-    console.log(`MCPAdapter: Cached ${mcpTools.length} tools for server ${serverId}.`);
+    // Obtener el cliente para este servidor
+    const client = this.mcpClients.get(serverId);
+    if (!client) {
+      throw new Error(`MCPAdapter: No client found for server ${serverId}`);
+    }
+    
+    try {
+      // Obtener herramientas usando el cliente MCP
+      const toolsList = await client.listTools();
+      
+      if (!toolsList || toolsList.length === 0) {
+        console.warn(`MCPAdapter: No tools found for server ${serverId}`);
+        this.toolsCache.set(serverId, { mcpTools: [], openAITools: [] });
+        return;
+      }
+      
+      // Convertir las herramientas al formato McpTool si es necesario
+      const mcpTools: McpTool[] = toolsList.map(tool => ({
+        id: tool.id || `${serverId}_${tool.name}`,
+        server_id: serverId,
+        name: tool.name,
+        description: tool.description || null,
+        parameters: tool.parameters || {}
+      }));
+      
+      // Traducir al formato de OpenAI
+      const openAITools = mcpTools.map(tool => 
+        this.translateToolToOpenAIFormat(tool, serverId)
+      );
+
+      // Almacenar en caché
+      this.toolsCache.set(serverId, { mcpTools, openAITools });
+      console.log(`MCPAdapter: Cached ${mcpTools.length} tools for server ${serverId}.`);
+    } catch (error) {
+      console.error(`MCPAdapter: Error loading tools for server ${serverId}:`, error);
+      // Limpiar caché si hay error
+      this.toolsCache.delete(serverId);
+      throw new Error(`Failed to cache tools for server ${serverId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**
@@ -194,35 +226,52 @@ export class MCPAdapter {
   ): Promise<any> {
     console.log(`MCPAdapter: Attempting to execute tool call for OpenAI function: ${functionName}`);
     
+    console.log(`MCPAdapter: Parsing OpenAI function name: ${functionName}`);
     // Parsear serverId y toolName desde functionName
-    // Asumimos el formato `mcp_${serverId}_${toolName}`
-    const nameParts = functionName.startsWith('mcp_') ? functionName.substring(4).split('_') : [];
-    if (nameParts.length < 2) { // Debería ser serverId_toolName, potencialmente con más guiones bajos en serverId
-        console.error(`MCPAdapter: Could not parse serverId and toolName from OpenAI function name: ${functionName}`);
+    // Formato esperado: `mcp_${serverId-con-guiones-convertidos-a-guiones-bajos}_${toolName}`
+    if (!functionName.startsWith('mcp_')) {
+        console.error(`MCPAdapter: Function name does not start with 'mcp_' prefix: ${functionName}`);
         return { error: `Invalid MCP function name format: ${functionName}` };
     }
+
+    // Quitar el prefijo 'mcp_'
+    const functionNameWithoutPrefix = functionName.substring(4);
+    console.log(`MCPAdapter: Function name without prefix: ${functionNameWithoutPrefix}`);
     
-    // Reconstruir serverId si contenía guiones bajos (que se convirtieron en '_')
-    // Esta parte es un poco heurística y depende de cómo se generó el serverId originalmente.
-    // Si los serverId son UUIDs, no tendrán guiones bajos. Si son nombres, sí.
-    // Por simplicidad, asumimos que el último segmento es el toolName y el resto es serverId.
-    const toolName = nameParts.pop()!; 
-    const serverIdFromFuncName = nameParts.join('_'); // Esto podría necesitar ajuste si los serverId tienen guiones bajos.
-                                                  // Por ahora, buscaremos un serverId que coincida.
-
-    let actualServerId = serverIdFromFuncName;
-    let serverCache = this.toolsCache.get(actualServerId);
-
-    if (!serverCache) {
-        // Intentar encontrar el serverId original si el nombre fue modificado (e.g. UUIDs con guiones)
-        for (const [sid, cache] of this.toolsCache.entries()) {
-            if (sid.replace(/-/g, '_') === serverIdFromFuncName) {
-                actualServerId = sid;
-                serverCache = cache;
+    // Buscar todas las herramientas en la caché
+    let toolFound = false;
+    let actualServerId = '';
+    let toolName = '';
+    
+    // Recorrer todos los servidores en la caché
+    for (const [serverId, cache] of this.toolsCache.entries()) {
+        const serverIdWithUnderscores = serverId.replace(/-/g, '_');
+        console.log(`MCPAdapter: Checking server ID: ${serverId} (with underscores: ${serverIdWithUnderscores})`);
+        
+        // Buscar en las herramientas de este servidor
+        for (const tool of cache.mcpTools) {
+            const expectedFunctionName = `${serverIdWithUnderscores}_${tool.name}`;
+            console.log(`MCPAdapter: Checking if '${expectedFunctionName}' matches end of '${functionNameWithoutPrefix}'`);
+            
+            // Verificar si el nombre coincide con el final del functionNameWithoutPrefix
+            if (functionNameWithoutPrefix.endsWith(expectedFunctionName)) {
+                actualServerId = serverId;
+                toolName = tool.name;
+                toolFound = true;
+                console.log(`MCPAdapter: Found match! Server ID: ${actualServerId}, Tool Name: ${toolName}`);
                 break;
             }
         }
+        
+        if (toolFound) break;
     }
+    
+    if (!toolFound) {
+        console.error(`MCPAdapter: Could not find matching tool for function name: ${functionName}`);
+        return { error: `No matching tool found for function: ${functionName}` };
+    }
+    
+    const serverCache = this.toolsCache.get(actualServerId);
 
     if (!serverCache || !serverCache.mcpTools.find(t => t.name === toolName)) {
       console.error(`MCPAdapter: Tool ${toolName} on server ${actualServerId} not found in cache for OpenAI function ${functionName}.`);
@@ -251,19 +300,23 @@ export class MCPAdapter {
     let errorMessage: string | null = null;
 
     try {
-      // Aquí, en el futuro, se llamaría a `this.mcpClients.get(actualServerId).callTool(toolName, functionArgs);`
-      console.log(`MCPAdapter: Simulating execution of ${toolName} with args:`, functionArgs);
-      
-      if (toolName === 'get_weather_forecast') {
-        result = { 
-          forecast: `Sunny with a chance of awesome for ${functionArgs.location}! (Simulated)`,
-          temperature: "25°C"
-        };
-      } else {
-        result = { message: `Simulated result for ${toolName}`, args_received: functionArgs };
+      // Obtener el cliente MCP para este servidor
+      const client = this.mcpClients.get(actualServerId);
+      if (!client) {
+        throw new Error(`No client found for server ${actualServerId}`);
       }
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simular latencia
-      console.log(`MCPAdapter: Simulation successful for ${toolName}. Result:`, result);
+      
+      // Verificar estado de conexión
+      if (client.connectionStatus !== 'connected') {
+        throw new Error(`Client for server ${actualServerId} is not connected (status: ${client.connectionStatus})`);
+      }
+      
+      console.log(`MCPAdapter: Executing tool ${toolName} with args:`, functionArgs);
+      
+      // Ejecutar la herramienta a través del cliente MCP
+      result = await client.callTool(toolName, functionArgs);
+      
+      console.log(`MCPAdapter: Tool execution successful for ${toolName}. Result:`, result);
 
     } catch (e: any) {
       console.error(`MCPAdapter: Error simulating execution of tool ${toolName}:`, e);
@@ -273,43 +326,59 @@ export class MCPAdapter {
     }
 
     // 4. Loggear finalización de ejecución
-    await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, status, result, errorMessage, userIdentifier, executionLogId);
+    await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, status, result, errorMessage || undefined, userIdentifier, executionLogId);
     console.log(`MCPAdapter: Logged ${status} execution for tool ${toolName}.`);
     
     return result;
   }
-
-  /**
-   * Simula la verificación del consentimiento del usuario.
-   * Debería consultar `mcp_user_consents` en una implementación real.
-   */
   private async verifyUserConsent(
     serverId: string, 
     toolName: string, 
     assistantId: string, 
     userIdentifier?: string
   ): Promise<boolean> {
+    // Verificar modo desarrollo (para pruebas)
+    const devMode = process.env.NEXT_PUBLIC_MCP_DEV_MODE === 'true';
+    if (devMode) {
+      console.log(`MCPAdapter: DESARROLLO - Otorgando consentimiento automático para tool ${toolName} (servidor ${serverId})`);
+      return true;
+    }
+    
+    // Si no hay identificador de usuario, no podemos verificar consentimiento
     if (!userIdentifier) {
       console.warn(`MCPAdapter: No userIdentifier provided for consent check. Defaulting to no consent.`);
-      return false; // O true si queremos bypass para pruebas iniciales sin usuario
+      return false;
     }
+    
     console.log(`MCPAdapter: Verifying consent for User: ${userIdentifier}, Server: ${serverId}, Tool: ${toolName}, Assistant: ${assistantId}`);
     
-    // TODO: Implementar consulta real a `mcp_user_consents`
-    // const { data, error } = await this.supabase
-    //   .from('mcp_user_consents')
-    //   .select('has_consent')
-    //   .eq('user_identifier', userIdentifier)
-    //   .eq('server_id', serverId)
-    //   .eq('tool_name', toolName)
-    //   .eq('assistant_id', assistantId)
-    //   .single();
-    // if (error || !data) { return false; }
-    // return data.has_consent;
-
-    // Por ahora, simular que siempre hay consentimiento si hay userIdentifier
-    console.log("MCPAdapter: Consent check simulated: Granted.");
-    return true; 
+    try {
+      // Consultar tabla de consentimientos
+      const { data, error } = await this.supabase
+        .from('mcp_user_consents')
+        .select('has_consent')
+        .eq('user_identifier', userIdentifier)
+        .eq('server_id', serverId)
+        .eq('tool_name', toolName)
+        .eq('assistant_id', assistantId)
+        .single();
+      
+      if (error) {
+        console.warn(`MCPAdapter: Error checking consent: ${error.message}. Defaulting to no consent.`);
+        return false;
+      }
+      
+      if (!data) {
+        console.log(`MCPAdapter: No consent record found. Defaulting to no consent.`);
+        return false;
+      }
+      
+      console.log(`MCPAdapter: Consent check result: ${data.has_consent ? 'Granted' : 'Denied'}.`);
+      return data.has_consent;
+    } catch (error) {
+      console.error(`MCPAdapter: Exception checking consent: ${error}. Defaulting to no consent.`);
+      return false;
+    }
   }
 
   /**
@@ -325,7 +394,7 @@ export class MCPAdapter {
     args: any,
     status: 'pending' | 'success' | 'error' | 'requires_action_response',
     result?: any | null,
-    errorMessage?: string | null,
+    errorMessage?: string | null | undefined,
     userIdentifier?: string,
     existingLogId?: string,
   ): Promise<string | null> {

@@ -1,0 +1,13 @@
+{
+  "name": "mcp-weather-service",
+  "version": "1.0.0",
+  "description": "Servidor MCP de ejemplo para pronóstico del tiempo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module"
+}
