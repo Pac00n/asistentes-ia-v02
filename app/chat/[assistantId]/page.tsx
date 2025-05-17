@@ -13,6 +13,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import ConsentLink from "@/components/ConsentLink";
 
 type Message = {
   id: string;
@@ -520,6 +521,8 @@ export default function ChatPage() {
                 <Link href="/assistants" className="flex items-center gap-2 hover:opacity-80 transition-opacity text-sm text-gray-300 hover:text-white">
                   <ArrowLeft className="h-4 w-4" /><span>Volver</span>
                 </Link>
+                {/* Enlace a gestión de consentimientos MCP */}
+                <ConsentLink className="text-gray-300 hover:text-white" />
               </div>
             </TooltipProvider>
             <AnimatePresence>

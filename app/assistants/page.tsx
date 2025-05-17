@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search, Settings } from "lucide-react";
 import { assistants } from "@/lib/assistants";
 import { IconRenderer } from "@/components/ui/icon-renderer";
 import React, { useState, useEffect } from "react";
@@ -94,9 +94,13 @@ export default function AssistantsPage() {
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut"}}
             className="flex flex-col md:flex-row justify-between items-center mb-10 md:mb-12"
           >
-            <div>
+            <div className="flex flex-col">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Explora Asistentes</h2>
               <p className="text-neutral-400 text-sm sm:text-base">Encuentra la IA perfecta para tu tarea.</p>
+              <Link href="/settings/consents" className="flex items-center mt-3 text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                <Settings className="mr-1.5 h-4 w-4" />
+                <span>Configurar permisos de herramientas MCP</span>
+              </Link>
             </div>
             <div className="mt-4 md:mt-0 w-full md:w-auto">
               <div className="relative">

@@ -1,0 +1,21 @@
+{
+  "name": "web-search-service",
+  "version": "1.0.0",
+  "description": "Servicio MCP de búsqueda web a través de Server-Sent Events (SSE)",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": ["mcp", "sse", "search", "ai"],
+  "author": "Orbia",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "uuid": "^11.1.0"
+  }
+}

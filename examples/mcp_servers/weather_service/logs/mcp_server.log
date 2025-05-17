@@ -1,0 +1,14 @@
+{"timestamp":"2025-05-17T11:00:55.229Z","level":"info","message":"Monitor iniciado","data":null}
+{"timestamp":"2025-05-17T11:02:59.401Z","level":"info","message":"Solicitud iniciada: GET /status","data":{"id":"1747479779400-7g3d2mh8ujb","ip":"::1"}}
+{"timestamp":"2025-05-17T11:02:59.407Z","level":"info","message":"Solicitud completada: GET /status","data":{"id":"1747479779400-7g3d2mh8ujb","duration":7,"statusCode":200,"endpoint":"/status","method":"GET"}}
+{"timestamp":"2025-05-17T11:03:13.424Z","level":"info","message":"Solicitud iniciada: GET /tools","data":{"id":"1747479793424-lo8m0f13j6","ip":"::1"}}
+{"timestamp":"2025-05-17T11:03:13.425Z","level":"info","message":"Solicitud completada: GET /tools","data":{"id":"1747479793424-lo8m0f13j6","duration":1,"statusCode":200,"endpoint":"/tools","method":"GET"}}
+{"timestamp":"2025-05-17T11:03:23.735Z","level":"info","message":"Solicitud iniciada: GET /metrics","data":{"id":"1747479803735-4s1w07hkgbv","ip":"::1"}}
+{"timestamp":"2025-05-17T11:03:23.736Z","level":"info","message":"Solicitud completada: GET /metrics","data":{"id":"1747479803735-4s1w07hkgbv","duration":1,"statusCode":200,"endpoint":"/metrics","method":"GET"}}
+{"timestamp":"2025-05-17T11:03:35.985Z","level":"info","message":"Solicitud iniciada: POST /tools/get_weather_forecast","data":{"id":"1747479815985-e3my7axat5","ip":"::1"}}
+{"timestamp":"2025-05-17T11:03:35.987Z","level":"info","message":"Herramienta ejecutada: get_weather_forecast","data":{"toolName":"get_weather_forecast","params":{"unit":"celsius","location":"Madrid"},"result":"object"}}
+{"timestamp":"2025-05-17T11:03:35.987Z","level":"info","message":"Solicitud completada: POST /tools/get_weather_forecast","data":{"id":"1747479815985-e3my7axat5","duration":2,"statusCode":200,"endpoint":"/tools/get_weather_forecast","method":"POST"}}
+{"timestamp":"2025-05-17T12:12:21.815Z","level":"info","message":"Monitor iniciado","data":null}
+{"timestamp":"2025-05-17T12:25:35.227Z","level":"info","message":"Monitor iniciado","data":null}
+{"timestamp":"2025-05-17T12:28:22.757Z","level":"info","message":"Monitor iniciado","data":null}
+{"timestamp":"2025-05-17T14:18:13.299Z","level":"info","message":"Monitor iniciado","data":null}

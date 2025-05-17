@@ -291,13 +291,13 @@ export class MCPAdapter {
     console.log(`MCPAdapter: Consent verified for tool ${toolName}.`);
 
     // 2. Loggear inicio de ejecución
-    const executionLogId = await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, 'pending', null, null, userIdentifier);
+    const executionLogId = await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, 'pending', null, undefined, userIdentifier);
     console.log(`MCPAdapter: Logged pending execution for tool ${toolName} with ID: ${executionLogId}`);
 
     // 3. Simular ejecución de la herramienta
     let result: any;
     let status: 'success' | 'error' = 'success';
-    let errorMessage: string | null = null;
+    let errorMessage: string | undefined = undefined;
 
     try {
       // Obtener el cliente MCP para este servidor
@@ -321,16 +321,22 @@ export class MCPAdapter {
     } catch (e: any) {
       console.error(`MCPAdapter: Error simulating execution of tool ${toolName}:`, e);
       status = 'error';
-      errorMessage = e.message || "Unknown error during tool simulation.";
+      // Asegurar que errorMessage sea siempre de tipo string | undefined
+      errorMessage = e && typeof e.message === 'string' ? e.message : "Unknown error during tool simulation.";
       result = { error: errorMessage };
     }
 
     // 4. Loggear finalización de ejecución
-    await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, status, result, errorMessage || undefined, userIdentifier, executionLogId);
+    await this.logToolExecution(toolCallId, actualServerId, toolName, assistantId, threadId, functionArgs, status, result, errorMessage, userIdentifier, executionLogId);
     console.log(`MCPAdapter: Logged ${status} execution for tool ${toolName}.`);
     
     return result;
   }
+  /**
+   * Verifica si el usuario ha dado consentimiento para utilizar una herramienta específica.
+   * El consentimiento se verifica consultando la tabla mcp_user_consents.
+   * Si estamos en modo desarrollo, se otorga consentimiento automáticamente.
+   */
   private async verifyUserConsent(
     serverId: string, 
     toolName: string, 
@@ -350,33 +356,46 @@ export class MCPAdapter {
       return false;
     }
     
-    console.log(`MCPAdapter: Verifying consent for User: ${userIdentifier}, Server: ${serverId}, Tool: ${toolName}, Assistant: ${assistantId}`);
-    
     try {
-      // Consultar tabla de consentimientos
-      const { data, error } = await this.supabase
-        .from('mcp_user_consents')
-        .select('has_consent')
-        .eq('user_identifier', userIdentifier)
+      // 1. Primero necesitamos obtener el tool_id a partir del serverId y toolName
+      const { data: toolData, error: toolError } = await this.supabase
+        .from('mcp_tools')
+        .select('id')
         .eq('server_id', serverId)
-        .eq('tool_name', toolName)
-        .eq('assistant_id', assistantId)
+        .eq('name', toolName)
         .single();
       
-      if (error) {
-        console.warn(`MCPAdapter: Error checking consent: ${error.message}. Defaulting to no consent.`);
+      if (toolError || !toolData) {
+        console.warn(`MCPAdapter: No se encontró la herramienta ${toolName} en el servidor ${serverId}. Error: ${toolError?.message}`);
         return false;
       }
       
-      if (!data) {
-        console.log(`MCPAdapter: No consent record found. Defaulting to no consent.`);
+      const toolId = toolData.id;
+      console.log(`MCPAdapter: Verificando consentimiento - Usuario: ${userIdentifier}, Tool ID: ${toolId}`);
+      
+      // 2. Ahora verificamos el consentimiento usando el tool_id y user_id
+      const { data: consentData, error: consentError } = await this.supabase
+        .from('mcp_user_consents')
+        .select('granted')
+        .eq('user_id', userIdentifier)
+        .eq('tool_id', toolId)
+        .single();
+      
+      if (consentError) {
+        console.warn(`MCPAdapter: Error verificando consentimiento: ${consentError.message}. Por seguridad, se deniega el acceso.`);
         return false;
       }
       
-      console.log(`MCPAdapter: Consent check result: ${data.has_consent ? 'Granted' : 'Denied'}.`);
-      return data.has_consent;
+      // Si no hay registro de consentimiento, asumimos que no está otorgado
+      if (!consentData) {
+        console.log(`MCPAdapter: No hay registro de consentimiento para tool ${toolName}. Se deniega acceso.`);
+        return false;
+      }
+      
+      console.log(`MCPAdapter: Resultado de verificación de consentimiento: ${consentData.granted ? 'Otorgado' : 'Denegado'}`);
+      return consentData.granted;
     } catch (error) {
-      console.error(`MCPAdapter: Exception checking consent: ${error}. Defaulting to no consent.`);
+      console.error(`MCPAdapter: Excepción verificando consentimiento: ${error}. Denegando acceso por seguridad.`);
       return false;
     }
   }
@@ -394,7 +413,7 @@ export class MCPAdapter {
     args: any,
     status: 'pending' | 'success' | 'error' | 'requires_action_response',
     result?: any | null,
-    errorMessage?: string | null | undefined,
+    errorMessage?: string | undefined,
     userIdentifier?: string,
     existingLogId?: string,
   ): Promise<string | null> {
@@ -411,7 +430,7 @@ export class MCPAdapter {
       result: result,
       error_message: errorMessage,
       user_identifier: userIdentifier,
-      completed_at: (status === 'success' || status === 'error') ? new Date().toISOString() : null,
+      completed_at: (status === 'success' || status === 'error') ? new Date().toISOString() : undefined,
       // started_at se define por defecto en la DB con NOW() al insertar
     };
 

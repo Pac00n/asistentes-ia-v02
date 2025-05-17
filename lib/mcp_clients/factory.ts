@@ -30,23 +30,23 @@ export class MCPClientFactory {
         return new FictionalMCPClient(serverInfo.id, this.supabase);
         
       case 'stdio':
-        if (!serverInfo.connection_info || !serverInfo.connection_info.command) {
-          throw new Error(`MCPClientFactory: Falta información de conexión para servidor stdio ${serverInfo.id}`);
+        if (!serverInfo.params || !serverInfo.params.command) {
+          throw new Error(`MCPClientFactory: Falta información de conexión (params.command) para servidor stdio ${serverInfo.id}`);
         }
         return new StdioMCPClient(
           serverInfo.id,
-          serverInfo.connection_info.command,
-          serverInfo.connection_info.args || []
+          serverInfo.params.command,
+          serverInfo.params.args || []
         );
         
       case 'sse':
-        if (!serverInfo.connection_info || !serverInfo.connection_info.url) {
-          throw new Error(`MCPClientFactory: Falta información de conexión para servidor SSE ${serverInfo.id}`);
+        if (!serverInfo.params || !serverInfo.params.url) {
+          throw new Error(`MCPClientFactory: Falta información de conexión (params.url) para servidor SSE ${serverInfo.id}`);
         }
         return new SSEMCPClient(
           serverInfo.id,
-          serverInfo.connection_info.url,
-          serverInfo.connection_info.api_key
+          serverInfo.params.url,
+          serverInfo.params.api_key
         );
         
       default:

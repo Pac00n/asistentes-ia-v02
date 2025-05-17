@@ -44,17 +44,23 @@ const readline = createInterface({
 
 // Manejador de líneas de stdin
 readline.on('line', async (line) => {
+  process.stderr.write(`Servidor MCP: Recibida línea: ${line}\n`);
   try {
     // Parsear el comando JSON
     const request = JSON.parse(line);
+    process.stderr.write(`Servidor MCP: Solicitud parseada correctamente. ID: ${request.id}, Acción: ${request.action}\n`);
     
     // Procesar la solicitud
     const response = await processRequest(request);
+    process.stderr.write(`Servidor MCP: Respuesta generada para ID: ${request.id}\n`);
     
     // Enviar respuesta al cliente
-    console.log(JSON.stringify(response));
+    const responseJSON = JSON.stringify(response);
+    process.stderr.write(`Servidor MCP: Enviando respuesta: ${responseJSON.substring(0, 100)}...\n`);
+    console.log(responseJSON);
   } catch (error) {
     // Manejar errores de parseo o procesamiento
+    process.stderr.write(`Servidor MCP ERROR: ${error.message}\n`);
     console.error(`Error processing request: ${error.message}`);
     console.log(JSON.stringify({
       id: Math.random().toString(36).substring(2, 15),
@@ -211,5 +217,5 @@ async function getWeatherForecast(params) {
   };
 }
 
-// Notificar que estamos listos
-console.error("MCP Weather Service started. Waiting for commands...");
+// Notificar que estamos listos - usando stderr para no interferir con el protocolo
+process.stderr.write("MCP Weather Service started. Waiting for commands...\n");

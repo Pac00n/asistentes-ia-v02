@@ -28,6 +28,25 @@ export class StdioMCPClient extends BaseMCPClient {
       try {
         this.connectionStatus = 'connecting';
         console.log(`StdioMCPClient: Iniciando proceso para servidor ${this.serverId}: ${this.command} ${this.args.join(' ')}`);
+        console.log(`StdioMCPClient: RUTA COMPLETA: ${process.cwd()}/${this.args[0]}`);
+        
+        // Verificar si el archivo existe antes de intentar ejecutarlo
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const filePath = this.args[0];
+          const fileExists = fs.existsSync(filePath);
+          console.log(`StdioMCPClient: ¿El archivo ${filePath} existe? ${fileExists}`);
+          
+          if (!fileExists) {
+            // Intentar buscar el archivo en rutas relativas
+            const cwdFilePath = path.join(process.cwd(), filePath);
+            const cwdFileExists = fs.existsSync(cwdFilePath);
+            console.log(`StdioMCPClient: ¿El archivo ${cwdFilePath} existe? ${cwdFileExists}`);
+          }
+        } catch (fsError) {
+          console.error(`StdioMCPClient: Error verificando archivo: ${fsError}`);
+        }
         
         this.process = spawn(this.command, this.args);
         
@@ -52,8 +71,9 @@ export class StdioMCPClient extends BaseMCPClient {
         // Manejar errores del proceso
         this.process.on('error', (err) => {
           console.error(`StdioMCPClient: Error en proceso para servidor ${this.serverId}:`, err);
+          const prevStatus = this.connectionStatus;
           this.connectionStatus = 'error';
-          if (this.connectionStatus === 'connecting') {
+          if (prevStatus === 'connecting') {
             reject(err);
           }
         });
@@ -107,15 +127,22 @@ export class StdioMCPClient extends BaseMCPClient {
    * Ejecuta una herramienta en el servidor
    */
   async callTool(toolName: string, parameters: any): Promise<any> {
+    console.log(`StdioMCPClient: Intentando ejecutar herramienta ${toolName} en servidor ${this.serverId}`);
+    console.log(`StdioMCPClient: Estado de conexión actual: ${this.connectionStatus}`);
+    console.log(`StdioMCPClient: ¿Proceso activo? ${this.process ? 'Sí, PID: ' + this.process.pid : 'No'}`);
+    
     if (this.connectionStatus !== 'connected') {
+      console.error(`StdioMCPClient: No se puede ejecutar herramienta. Estado de conexión: ${this.connectionStatus}`);
       throw new Error(`StdioMCPClient: No se puede ejecutar herramienta. Estado de conexión: ${this.connectionStatus}`);
     }
     
+    console.log(`StdioMCPClient: Enviando solicitud 'call_tool' para ${toolName} con parámetros:`, parameters);
     const response = await this.sendRequest('call_tool', {
       tool_name: toolName,
       parameters: parameters
     });
     
+    console.log(`StdioMCPClient: Respuesta recibida para ${toolName}:`, response);
     return response.result;
   }
 
@@ -166,8 +193,14 @@ export class StdioMCPClient extends BaseMCPClient {
       
       if (line) {
         try {
-          const response = JSON.parse(line);
-          this.handleResponse(response);
+          // Verificar si la línea parece ser JSON (empieza con { o [)
+          if (line.startsWith('{') || line.startsWith('[')) {
+            const response = JSON.parse(line);
+            this.handleResponse(response);
+          } else {
+            // Si no es JSON, simplemente lo registramos como mensaje del servidor
+            console.log(`StdioMCPClient: Mensaje del servidor ${this.serverId} (no JSON): ${line}`);
+          }
         } catch (error) {
           console.error(`StdioMCPClient: Error parseando respuesta del servidor ${this.serverId}:`, error);
         }
