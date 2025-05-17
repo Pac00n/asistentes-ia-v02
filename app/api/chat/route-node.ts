@@ -11,8 +11,8 @@ export const runtime = "nodejs"
 export const maxDuration = 60
 
 export async function POST(req: Request) {
-  // LOG DE PRUEBA V4
-  console.log("--- ROUTE-NODE.TS V4 EXECUTION --- API Chat Endpoint Start ---");
+  // LOG DE PRUEBA V5 - NODE
+  console.log("--- EXEC-ROUTE-NODE.TS --- V5 --- API Chat Endpoint Start ---");
   try {
     // Añadir employeeToken a la desestructuración si se espera del frontend
     const { assistantId, message, threadId, employeeToken } = await req.json()
@@ -33,8 +33,8 @@ export async function POST(req: Request) {
 
     // VERIFICACIÓN EXPLÍCITA AÑADIDA:
     if (!openaiAssistantId) {
-      console.error(`Error crítico V4: El asistente con ID interno '${assistant.id}' y nombre '${assistant.name}' no tiene un 'openaiAssistantId' configurado en lib/assistants.ts.`);
-      return NextResponse.json({ error: `Configuración interna inválida V4 para el asistente '${assistant.name}'. Falta el ID de OpenAI.` }, { status: 500 });
+      console.error(`Error crítico V5 NODE: El asistente con ID interno '${assistant.id}' y nombre '${assistant.name}' no tiene un 'openaiAssistantId' configurado en lib/assistants.ts.`);
+      return NextResponse.json({ error: `Configuración interna inválida V5 NODE para el asistente '${assistant.name}'. Falta el ID de OpenAI.` }, { status: 500 });
     }
     // FIN DE LA VERIFICACIÓN AÑADIDA
 
