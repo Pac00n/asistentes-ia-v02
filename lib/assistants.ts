@@ -58,8 +58,8 @@ export const assistants: Assistant[] = [
   {
     id: "mcp-test-assistant", 
     openaiAssistantId: "asst_aB9vQf9JCz7lJL1bzZKcCM1c", // ID real del nuevo asistente OpenAI para MCP
-    name: "Pruebas MCP", 
-    shortDescription: "Asistente para probar la integración de Model Context Protocol.",
+    name: "Pruebas MCP V2", // <--- CAMBIO DE NOMBRE
+    shortDescription: "Asistente V2 para probar MCP.", // <--- CAMBIO DE DESC. CORTA
     description: "Este asistente está configurado para probar herramientas y capacidades a través de MCP. No tiene instrucciones predefinidas.", 
     iconType: Bot, // Usamos un ícono genérico de Bot
     bgColor: "bg-blue-600", // Un color distintivo
@@ -70,6 +70,3 @@ export const assistants: Assistant[] = [
 export const getAssistantById = (id: string): Assistant | undefined => {
   return assistants.find((assistant) => assistant.id === id);
 };
-
-// Renombrar la propiedad assistant_id a openaiAssistantId en la definición del tipo y en los objetos.
-// Esto ya se hizo en el código proporcionado.
