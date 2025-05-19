@@ -18,10 +18,21 @@ function createStream() {
       await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
     },
     async writeToolCall(toolCall: any) {
-      await writer.write(encoder.encode(`data: ${JSON.stringify({ toolCall })}\n\n`));
+      // Asegurar que el objeto es serializable
+      const serializableToolCall = {
+        id: toolCall.id,
+        name: toolCall.name,
+        arguments: toolCall.arguments
+      };
+      await writer.write(encoder.encode(`data: ${JSON.stringify({ toolCall: serializableToolCall })}\n\n`));
     },
     async writeToolResult(result: any) {
-      await writer.write(encoder.encode(`data: ${JSON.stringify({ toolResult: result })}\n\n`));
+      // Asegurar que el resultado es serializable
+      const serializableResult = typeof result === 'object' && result !== null 
+        ? JSON.parse(JSON.stringify(result)) 
+        : result;
+      
+      await writer.write(encoder.encode(`data: ${JSON.stringify({ toolResult: serializableResult })}\n\n`));
     },
     async close() {
       await writer.write(encoder.encode("data: [DONE]\n\n"));
@@ -122,11 +133,14 @@ export async function POST(req: NextRequest) {
                 arguments: args
               });
               
-              // Enviar resultado de la herramienta
-              await writeToolResult({
+              // Convertir el resultado a un objeto serializable
+              const serializableResult = JSON.parse(JSON.stringify({
                 toolCallId: currentToolCall.id,
                 result
-              });
+              }));
+              
+              // Enviar resultado de la herramienta
+              await writeToolResult(serializableResult);
               
               // Continuar la conversación con el resultado
               const toolResponse = await openai.chat.completions.create({
@@ -165,8 +179,10 @@ export async function POST(req: NextRequest) {
               currentToolCall = null;
             } catch (error) {
               console.error("Error al ejecutar herramienta:", error);
+              // Asegurar que el error es serializable
+              const errorMessage = error instanceof Error ? error.message : "Error desconocido";
               await writeToolResult({
-                error: `Error al ejecutar herramienta: ${error}`
+                error: errorMessage
               });
               currentToolCall = null;
             }
@@ -177,7 +193,8 @@ export async function POST(req: NextRequest) {
         await close();
       } catch (error) {
         console.error("Error en el procesamiento:", error);
-        await write(`Error: ${error instanceof Error ? error.message : "Error desconocido"}`);
+        const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+        await write(`Error: ${errorMessage}`);
         await close();
       }
     })();
@@ -185,8 +202,9 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("Error en la ruta API:", error);
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error desconocido" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
