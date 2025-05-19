@@ -1,7 +1,7 @@
 // Leete este documento en docs // lib/mcp-config.ts
 
 import { spawn, ChildProcess } from 'child_process';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'; // Added .js back
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp'; // Removed .js
 
 export interface MCPServerConfig {
   name: string;
