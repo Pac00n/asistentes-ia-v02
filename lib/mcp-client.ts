@@ -1,6 +1,6 @@
 // lib/mcp-client.ts
 
-import { McpClient, McpClientOptions, McpClientToolDefinition, StdioClientTransport } from '@modelcontextprotocol/sdk/client';
+import { McpClient, McpClientOptions, McpClientToolDefinition, StdioClientTransport } from '@modelcontextprotocol/sdk/client/mcp.js';
 // McpServer is used in mcp-config, not directly here.
 
 import { startMCPServer, stopMCPServer, mcpServers, MCPServerConfig } from './mcp-config';

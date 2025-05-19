@@ -5,7 +5,7 @@ import { mcpManager } from "@/lib/mcp-client";
 import OpenAI from 'openai';
 
 export const runtime = "nodejs";
-export const maxDuration = 180;
+export const maxDuration = 60; // Changed from 180
 
 async function handleMCPToolCallsDirect(
   toolCalls: OpenAI.Beta.Threads.Runs.RequiredActionFunctionToolCall[]
@@ -144,10 +144,10 @@ export async function POST(req: Request) {
 
     let status = runData.status;
     let attempts = 0;
-    const maxAttempts = 90;
+    const maxAttempts = 90; // This might be too long if maxDuration is 60s
 
     while (["queued", "in_progress", "requires_action", "cancelling"].includes(status) && attempts < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
       attempts++;
 
       console.log(`[API Chat Direct] Polling run status (Attempt ${attempts}/${maxAttempts}). Run ID: ${runId}, Current Status: ${status}`);

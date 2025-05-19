@@ -6,7 +6,7 @@ import { mcpManager } from '@/lib/mcp-client';
 import { Buffer } from 'buffer';
 
 export const runtime = "nodejs";
-export const maxDuration = 180;
+export const maxDuration = 60; // Changed from 180
 
 let openai: OpenAI | null = null;
 const openAIApiKey = process.env.OPENAI_API_KEY;
