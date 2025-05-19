@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Cpu } from "lucide-react";
+import { Cpu, Send, ArrowLeft, Loader2, Bot, User } from "lucide-react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import SmallRotatingLogo from "../../components/SmallRotatingLogo";
 
 interface ChatMessage {
   role: "user" | "assistant" | "tool";
@@ -20,6 +23,23 @@ export default function MCPChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rotation, setRotation] = useState(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Efecto para el logo giratorio
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      setRotation(scrollY * 0.1);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Efecto para hacer scroll al final de los mensajes
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,108 +164,158 @@ export default function MCPChatPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 h-screen flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold flex items-center">
-          <Cpu className="mr-2 h-6 w-6 text-emerald-500" />
-          <span>Asistente MCP</span>
-          <span className="ml-2 px-2 py-1 text-xs bg-emerald-500 text-white rounded-full">MCP</span>
-        </h1>
-        <Link href="/" className="text-blue-500 hover:underline">
-          Volver a Inicio
-        </Link>
-      </div>
-      
-      <div className="flex-1 border border-emerald-200 rounded-lg overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4">
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <Cpu className="mx-auto h-12 w-12 mb-4 text-emerald-500" />
-                <p>¡Hola! Soy el Asistente MCP. Puedo ayudarte con:</p>
-                <ul className="mt-2 list-disc list-inside text-left max-w-md mx-auto">
-                  <li>Búsquedas en la web</li>
-                  <li>Consultas del clima</li>
-                  <li>Cálculos matemáticos</li>
-                  <li>Conversión de divisas</li>
-                  <li>Titulares de noticias</li>
-                </ul>
-                <p className="mt-4">¿En qué puedo ayudarte hoy?</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
+      {/* Fondo con efecto de partículas y gradiente */}
+      <div className="fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-transparent"></div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/80 to-black/90"></div>
+        
+        {/* Logo giratorio en el fondo */}
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-full h-full">
+              <div 
+                className="absolute inset-0 bg-[radial-gradient(circle_at_center,#8b5cf640_0,transparent_60%)] rounded-full"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                  transition: 'transform 0.1s ease-out',
+                  filter: 'blur(80px)'
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <SmallRotatingLogo />
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((message, index) => {
-                // No renderizar nada para los mensajes de rol "tool"
-                if (message.role === "tool") {
-                  return null;
-                }
+          </div>
+        </div>
+      </div>
 
-                return (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg ${
-                      message.role === "user"
-                        ? "bg-blue-100 ml-auto max-w-[80%]"
-                        : "bg-gray-100 max-w-[80%]" // Solo user y assistant llegan aquí
-                    }`}
-                  >
-                    {/* Contenido del mensaje */}
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                    
-                    {/* Visualización de herramientas (si hay) */}
-                    {message.role === "assistant" && message.toolCall && (
-                      <div className="mt-2 p-2 bg-emerald-50 rounded border border-emerald-200">
-                        <p className="text-xs text-emerald-700 font-medium">
-                          Usando herramienta: {message.toolCall.name}
-                        </p>
+      <div className="relative z-10 max-w-5xl mx-auto h-screen flex flex-col">
+        {/* Header */}
+        <header className="pt-6 pb-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <Link href="/assistants" className="flex items-center group">
+              <div className="p-1.5 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
+                <ArrowLeft className="h-5 w-5 text-purple-400" />
+              </div>
+              <span className="ml-2 text-sm font-medium text-purple-300 group-hover:text-purple-200 transition-colors">
+                Volver a asistentes
+              </span>
+            </Link>
+            <div className="flex items-center space-x-2 bg-gray-800/50 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-700/50">
+              <div className="h-2.5 w-2.5 rounded-full bg-green-400 animate-pulse"></div>
+              <span className="text-sm font-medium text-gray-300">MCP Assistant</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Área de mensajes */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {messages.length === 0 ? (
+            <motion.div 
+              className="flex flex-col items-center justify-center h-full text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 mb-6">
+                <Cpu className="h-12 w-12 text-purple-400 mx-auto" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Asistente MCP</h2>
+              <p className="text-gray-400 max-w-md">
+                Soy un asistente de IA con capacidades avanzadas. 
+                ¿En qué puedo ayudarte hoy?
+              </p>
+            </motion.div>
+          ) : (
+            messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-3/4 rounded-2xl px-5 py-3 ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-none'
+                      : 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-bl-none text-gray-100'
+                  }`}
+                >
+                  <div className="flex items-start space-x-3">
+                    {message.role === 'assistant' && (
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <Bot className="h-4 w-4 text-purple-400" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="whitespace-pre-wrap break-words">
+                        {message.content}
+                      </p>
+                    </div>
+                    {message.role === 'user' && (
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center ml-2">
+                        <User className="h-4 w-4 text-blue-400" />
                       </div>
                     )}
                   </div>
-                );
-              })}
-              
-              {/* Indicador de carga */}
-              {isLoading && (
-                <div className="p-4 rounded-lg bg-gray-100 max-w-[80%]">
-                  <div className="flex items-center space-x-2">
-                    <div className="animate-pulse h-2 w-2 bg-gray-400 rounded-full"></div>
-                    <div className="animate-pulse h-2 w-2 bg-gray-400 rounded-full animation-delay-200"></div>
-                    <div className="animate-pulse h-2 w-2 bg-gray-400 rounded-full animation-delay-400"></div>
-                  </div>
                 </div>
-              )}
-              
-              {/* Mensaje de error */}
-              {error && (
-                <div className="p-4 rounded-lg bg-red-100 text-red-700 max-w-[80%]">
-                  Error: {error}
-                </div>
-              )}
-            </div>
+              </motion.div>
+            ))
           )}
+          <div ref={messagesEndRef} />
         </div>
-        
-        {/* Formulario de entrada */}
-        <form onSubmit={handleSubmit} className="border-t p-4">
-          <div className="flex space-x-2">
+
+        {/* Área de entrada */}
+        <div className="px-4 sm:px-6 lg:px-8 pb-8 pt-4">
+          <form 
+            onSubmit={handleSubmit} 
+            className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all duration-200"
+          >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Pregunta algo al asistente MCP..."
-              className="flex-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Escribe tu mensaje..."
+              className="w-full bg-transparent border-0 focus:ring-0 text-white placeholder-gray-400 pr-16 py-4 pl-6"
               disabled={isLoading}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="p-2 bg-emerald-500 text-white rounded-md disabled:bg-emerald-300"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Enviar
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
             </button>
-          </div>
-        </form>
+          </form>
+          
+          {error && (
+            <motion.div 
+              className="mt-3 px-4 py-2 bg-red-900/30 border border-red-800/50 text-red-200 text-sm rounded-lg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {error}
+            </motion.div>
+          )}
+          
+          <p className="mt-3 text-center text-xs text-gray-500">
+            MCP puede cometer errores. Verifica la información importante.
+          </p>
+        </div>
       </div>
     </div>
   );
