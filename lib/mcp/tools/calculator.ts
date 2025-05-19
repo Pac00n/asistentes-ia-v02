@@ -1,13 +1,28 @@
 import { z } from "zod";
 import { evaluate } from "mathjs";
 
+// Definir el esquema Zod
+const calculatorSchema = z.object({
+  expression: z.string().describe("Expresión matemática a calcular")
+});
+
+// Convertir manualmente el esquema a JSON plano compatible con OpenAI
+const calculatorParameters = {
+  type: "object",
+  properties: {
+    expression: {
+      type: "string",
+      description: "Expresión matemática a calcular"
+    }
+  },
+  required: ["expression"]
+};
+
 export const calculatorTool = {
   meta: {
     name: "calculate",
     description: "Realiza cálculos matemáticos",
-    parameters: z.object({
-      expression: z.string().describe("Expresión matemática a calcular")
-    }).toJSON(),
+    parameters: calculatorParameters,
   },
   async run({ expression }: { expression: string }) {
     try {

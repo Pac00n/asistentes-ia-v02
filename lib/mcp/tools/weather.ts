@@ -1,13 +1,28 @@
 import { z } from "zod";
 import axios from "axios";
 
+// Definir el esquema Zod
+const weatherSchema = z.object({
+  city: z.string().describe("Nombre de la ciudad")
+});
+
+// Convertir manualmente el esquema a JSON plano compatible con OpenAI
+const weatherParameters = {
+  type: "object",
+  properties: {
+    city: {
+      type: "string",
+      description: "Nombre de la ciudad"
+    }
+  },
+  required: ["city"]
+};
+
 export const weatherTool = {
   meta: {
     name: "get_weather",
     description: "Obtiene el pronóstico del tiempo para una ciudad específica",
-    parameters: z.object({
-      city: z.string().describe("Nombre de la ciudad")
-    }).toJSON(),
+    parameters: weatherParameters,
   },
   async run({ city }: { city: string }) {
     try {

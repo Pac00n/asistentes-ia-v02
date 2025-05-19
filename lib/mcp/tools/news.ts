@@ -1,14 +1,32 @@
 import { z } from "zod";
 import axios from "axios";
 
+// Definir el esquema Zod
+const newsSchema = z.object({
+  category: z.string().optional().describe("Categoría de noticias (ej: business, technology, sports)"),
+  country: z.string().optional().describe("Código de país (ej: us, es, mx)")
+});
+
+// Convertir manualmente el esquema a JSON plano compatible con OpenAI
+const newsParameters = {
+  type: "object",
+  properties: {
+    category: {
+      type: "string",
+      description: "Categoría de noticias (ej: business, technology, sports)"
+    },
+    country: {
+      type: "string",
+      description: "Código de país (ej: us, es, mx)"
+    }
+  }
+};
+
 export const newsTool = {
   meta: {
     name: "get_news_headlines",
     description: "Obtiene titulares de noticias recientes",
-    parameters: z.object({
-      category: z.string().optional().describe("Categoría de noticias (ej: business, technology, sports)"),
-      country: z.string().optional().describe("Código de país (ej: us, es, mx)")
-    }).toJSON(),
+    parameters: newsParameters,
   },
   async run({ category = "general", country = "us" }: { category?: string, country?: string }) {
     try {

@@ -1,15 +1,38 @@
 import { z } from "zod";
 import axios from "axios";
 
+// Definir el esquema Zod
+const currencySchema = z.object({
+  amount: z.number().describe("Cantidad a convertir"),
+  from: z.string().describe("Código de moneda origen (ej: USD)"),
+  to: z.string().describe("Código de moneda destino (ej: EUR)")
+});
+
+// Convertir manualmente el esquema a JSON plano compatible con OpenAI
+const currencyParameters = {
+  type: "object",
+  properties: {
+    amount: {
+      type: "number",
+      description: "Cantidad a convertir"
+    },
+    from: {
+      type: "string",
+      description: "Código de moneda origen (ej: USD)"
+    },
+    to: {
+      type: "string",
+      description: "Código de moneda destino (ej: EUR)"
+    }
+  },
+  required: ["amount", "from", "to"]
+};
+
 export const currencyTool = {
   meta: {
     name: "convert_currency",
     description: "Convierte entre diferentes monedas",
-    parameters: z.object({
-      amount: z.number().describe("Cantidad a convertir"),
-      from: z.string().describe("Código de moneda origen (ej: USD)"),
-      to: z.string().describe("Código de moneda destino (ej: EUR)")
-    }).toJSON(),
+    parameters: currencyParameters,
   },
   async run({ amount, from, to }: { amount: number, from: string, to: string }) {
     try {

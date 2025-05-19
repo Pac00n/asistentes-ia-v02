@@ -1,13 +1,28 @@
 import { z } from "zod";
 import axios from "axios";
 
+// Definir el esquema Zod
+const searchSchema = z.object({
+  query: z.string().describe("Consulta de búsqueda")
+});
+
+// Convertir manualmente el esquema a JSON plano compatible con OpenAI
+const searchParameters = {
+  type: "object",
+  properties: {
+    query: {
+      type: "string",
+      description: "Consulta de búsqueda"
+    }
+  },
+  required: ["query"]
+};
+
 export const searchTool = {
   meta: {
     name: "search_web",
     description: "Busca información en la web",
-    parameters: z.object({
-      query: z.string().describe("Consulta de búsqueda")
-    }).toJSON(),
+    parameters: searchParameters,
   },
   async run({ query }: { query: string }) {
     try {
