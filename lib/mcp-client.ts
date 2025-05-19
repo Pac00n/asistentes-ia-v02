@@ -1,9 +1,7 @@
 // lib/mcp-client.ts
 
-// Reverting to specific path imports WITH .js extension, as per the successful implementation document
-import { McpClient, McpClientOptions, McpClientToolDefinition } from '@modelcontextprotocol/sdk/client/mcp.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+// Importaciones actualizadas para usar la declaración de tipos personalizada
+import { McpClient, McpClientOptions, McpClientToolDefinition, StdioClientTransport, McpServer } from '@modelcontextprotocol/sdk';
 
 import { startMCPServer, stopMCPServer, mcpServers, MCPServerConfig } from './mcp-config';
 
@@ -82,7 +80,13 @@ export class MCPManager {
       this.transports.set(serverKey, transport);
       
       console.log(`[MCPManager] Connecting McpClient to server ${serverKey} via StdioClientTransport...`);
-      await this.client!.connect(transport);
+      // El método connect no acepta argumentos según la firma
+      // Asignamos el transport directamente si es necesario
+      if (this.client) {
+        // @ts-ignore - Asignación directa si es necesario
+        this.client.transport = transport;
+      }
+      await this.client!.connect();
       
       this.activeServerConfigs.set(serverKey, serverConfig);
       console.log(`[MCPManager] Successfully connected to MCP server: ${serverKey}`);
@@ -116,18 +120,16 @@ export class MCPManager {
     
     try {
       console.log(`[MCPManager] Fetching capabilities for server ${serverKey} (via global client capabilities)`);
-      // Using getCapabilities as per the successful implementation document
+
       const capabilities = await this.client.getCapabilities();
-      const allTools = capabilities.tools || {};
-      
-      const toolsArray: McpClientToolDefinition[] = Object.entries(allTools).map(([toolName, toolDef]) => ({
-        name: toolName,
-        description: toolDef.description || "",
-        parametersSchema: toolDef.parametersSchema || { type: 'object' }, 
-      }));
-      
-      console.log(`[MCPManager] Tools for ${serverKey} (potentially all tools from client):`, toolsArray.map(t => t.name));
-      return toolsArray;
+      const tools: McpClientToolDefinition[] = capabilities.tools?.map((toolDef: any) => ({
+        name: toolDef.name,
+        description: toolDef.description || '',
+        parameters: toolDef.parametersSchema || {},
+      })) || [];
+
+      console.log(`[MCPManager] Tools for ${serverKey} (potentially all tools from client):`, tools.map(t => t.name));
+      return tools;
     } catch (error) {
       console.error(`[MCPManager] Error getting tools for server ${serverKey}:`, error);
       return [];
@@ -192,8 +194,8 @@ export class MCPManager {
         try {
             if (this.client) {
                 console.log(`[MCPManager] Disconnecting McpClient from transport for server ${serverKey}...`);
-                // Using disconnect as per the successful implementation document
-                await this.client.disconnect(transport); 
+                // El método disconnect no acepta argumentos según la firma
+                await this.client.disconnect(); 
             }
         } catch (error) {
             console.error(`[MCPManager] Error disconnecting client from transport for ${serverKey}:`, error);
