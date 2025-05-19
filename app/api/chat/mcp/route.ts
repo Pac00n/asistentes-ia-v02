@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { executeTool, registry } from "@/lib/mcp/registry";
 
-export const runtime = "edge"; // Usar Edge Runtime para streaming
+// export const runtime = "edge"; // Usar Edge Runtime para streaming (Comentado para probar con Node.js runtime por problemas con mathjs)
 
 // Función para crear un stream de texto
 function createStream() {

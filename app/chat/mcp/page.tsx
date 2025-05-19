@@ -4,8 +4,19 @@ import { useState } from "react";
 import Link from "next/link";
 import { Cpu } from "lucide-react";
 
+interface ChatMessage {
+  role: "user" | "assistant" | "tool";
+  content: string | null;
+  toolCall?: {
+    id: string;
+    name: string;
+    arguments: string;
+  };
+  tool_call_id?: string;
+}
+
 export default function MCPChatPage() {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +26,7 @@ export default function MCPChatPage() {
     if (!input.trim() || isLoading) return;
 
     // Agregar mensaje del usuario
-    const userMessage = { role: "user", content: input };
+    const userMessage: ChatMessage = { role: "user", content: input };
     setMessages(prev => [...prev, userMessage]);
     
     // Limpiar input y establecer estado de carga
@@ -32,7 +43,7 @@ export default function MCPChatPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: [...messages, userMessage].filter(msg => msg.role === 'user' || msg.role === 'assistant'),
         }),
       });
 
@@ -44,8 +55,8 @@ export default function MCPChatPage() {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No se pudo obtener el reader del stream");
 
-      let assistantMessage = { role: "assistant", content: "" };
-      let currentToolCall: any = null;
+      // Las variables assistantMessage y currentToolCall ya no son necesarias aquí
+      // Se manejará directamente dentro de las actualizaciones de estado de setMessages
 
       // Función para procesar el stream
       const processStream = async () => {
@@ -66,14 +77,20 @@ export default function MCPChatPage() {
 
               // Procesar texto
               if (data.text) {
-                assistantMessage.content += data.text;
                 setMessages(prev => {
-                  // Reemplazar el último mensaje si es del asistente, o añadir uno nuevo
                   const newMessages = [...prev];
-                  if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === "assistant") {
-                    newMessages[newMessages.length - 1] = assistantMessage;
+                  const lastMsg = newMessages.length > 0 ? newMessages[newMessages.length - 1] : null;
+                  
+                  if (lastMsg && lastMsg.role === 'assistant') {
+                    // Anexar al último mensaje del asistente
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMsg,
+                      content: (lastMsg.content || "") + data.text
+                    };
                   } else {
-                    newMessages.push(assistantMessage);
+                    // Iniciar un nuevo mensaje del asistente
+                    // Esto ocurrirá si no hay mensajes previos, o si el último mensaje fue del usuario o de una herramienta.
+                    newMessages.push({ role: 'assistant', content: data.text });
                   }
                   return newMessages;
                 });
@@ -81,14 +98,20 @@ export default function MCPChatPage() {
 
               // Procesar llamada a herramienta
               if (data.toolCall) {
-                currentToolCall = data.toolCall;
-                assistantMessage.toolCall = currentToolCall;
                 setMessages(prev => {
                   const newMessages = [...prev];
-                  if (newMessages.length > 0 && newMessages[newMessages.length - 1].role === "assistant") {
-                    newMessages[newMessages.length - 1] = assistantMessage;
+                  const lastMsg = newMessages.length > 0 ? newMessages[newMessages.length - 1] : null;
+
+                  if (lastMsg && lastMsg.role === 'assistant') {
+                    // Añadir toolCall al último mensaje del asistente
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMsg,
+                      toolCall: data.toolCall
+                    };
                   } else {
-                    newMessages.push(assistantMessage);
+                    // Si no hay un mensaje de asistente previo al que adjuntar la toolCall,
+                    // (ej. la toolCall es lo primero que envía el asistente), creamos uno nuevo.
+                    newMessages.push({ role: 'assistant', content: "", toolCall: data.toolCall });
                   }
                   return newMessages;
                 });
@@ -100,7 +123,7 @@ export default function MCPChatPage() {
                 setMessages(prev => [...prev, {
                   role: "tool",
                   content: JSON.stringify(data.toolResult.result, null, 2),
-                  toolCallId: data.toolResult.toolCallId
+                  tool_call_id: data.toolResult.toolCallId
                 }]);
               }
             } catch (e) {
@@ -152,30 +175,35 @@ export default function MCPChatPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`p-4 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-blue-100 ml-auto max-w-[80%]"
-                      : message.role === "tool"
-                      ? "bg-emerald-50 border border-emerald-200 max-w-[80%]"
-                      : "bg-gray-100 max-w-[80%]"
-                  }`}
-                >
-                  {/* Contenido del mensaje */}
-                  <div className="whitespace-pre-wrap">{message.content}</div>
-                  
-                  {/* Visualización de herramientas (si hay) */}
-                  {message.role === "assistant" && message.toolCall && (
-                    <div className="mt-2 p-2 bg-emerald-50 rounded border border-emerald-200">
-                      <p className="text-xs text-emerald-700 font-medium">
-                        Usando herramienta: {message.toolCall.name}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
+              {messages.map((message, index) => {
+                // No renderizar nada para los mensajes de rol "tool"
+                if (message.role === "tool") {
+                  return null;
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg ${
+                      message.role === "user"
+                        ? "bg-blue-100 ml-auto max-w-[80%]"
+                        : "bg-gray-100 max-w-[80%]" // Solo user y assistant llegan aquí
+                    }`}
+                  >
+                    {/* Contenido del mensaje */}
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    
+                    {/* Visualización de herramientas (si hay) */}
+                    {message.role === "assistant" && message.toolCall && (
+                      <div className="mt-2 p-2 bg-emerald-50 rounded border border-emerald-200">
+                        <p className="text-xs text-emerald-700 font-medium">
+                          Usando herramienta: {message.toolCall.name}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               
               {/* Indicador de carga */}
               {isLoading && (

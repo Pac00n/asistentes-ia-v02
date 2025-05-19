@@ -39,11 +39,18 @@ export const weatherTool = {
       // Intentar obtener coordenadas reales de la ciudad mediante geocoding
       try {
         const geoResponse = await axios.get("https://geocoding-api.open-meteo.com/v1/search", {
-          params: { name: city, count: 1 }
+          params: { name: city, count: 5, language: 'en' } // Aumentamos count a 5
         });
         
         if (geoResponse.data.results && geoResponse.data.results.length > 0) {
-          const location = geoResponse.data.results[0];
+          let location = geoResponse.data.results[0]; // Por defecto el primer resultado
+          // Intentar encontrar una coincidencia en USA
+          const usLocation = geoResponse.data.results.find(
+            (loc: any) => loc.country_code === "US" && loc.name.toLowerCase().includes(city.toLowerCase().split(",")[0])
+          );
+          if (usLocation) {
+            location = usLocation;
+          }
           
           // Nueva petición con coordenadas correctas
           const weatherResponse = await axios.get("https://api.open-meteo.com/v1/forecast", {
