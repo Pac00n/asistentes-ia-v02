@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getAssistantById, Assistant } from "@/lib/assistants"; // Import Assistant type
+import { getAssistantById } from "@/lib/assistants";
 import { ArrowLeft, Send, Loader2, Paperclip, X, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +23,7 @@ type Message = {
   isStreaming?: boolean;
 };
 
+// Helper function to format assistant messages (quita citaciones como 【1†source】)
 const formatAssistantMessage = (content: string): string => {
   const citationRegex = /\【.*?\】/g;
   return content.replace(citationRegex, "").trim();
@@ -63,6 +64,7 @@ const formatAssistantMessage = (content: string): string => {
   border: 2px solid rgba(255,255,255,0.2);
   transition: all 0.3s ease;
   color: white !important;
+  /* Color de fondo base más oscuro para mejor visibilidad */
   background-color: #2563eb;
 }
 .btn-gradient-animated:hover {
@@ -80,6 +82,7 @@ const formatAssistantMessage = (content: string): string => {
 }
 `}</style>
 
+// Redefinir AnimatedDots para usar las nuevas clases
 const AnimatedDots = () => (
   <span className="inline-flex gap-0.5">
     <span className="animated-dot">.</span>
@@ -103,6 +106,7 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamControllerRef = useRef<AbortController | null>(null);
 
+  // Lógica para la rotación del fondo (existente)
   const [rotation, setRotation] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
@@ -140,7 +144,7 @@ export default function ChatPage() {
             const messagesWithDates = parsedMessages.map((msg: any) => ({
               ...msg,
               timestamp: new Date(msg.timestamp),
-              isStreaming: false, 
+              isStreaming: false, // Ensure old messages are not streaming
             }));
             setMessages(messagesWithDates);
           } catch (e) {
@@ -160,6 +164,7 @@ export default function ChatPage() {
   }, [assistantId, showWelcomeMessage]);
 
   useEffect(() => {
+    // Guardar solo mensajes que no estén en streaming activo y si hay un threadId
     const messagesToSave = messages.filter(msg => !msg.isStreaming);
     if (messagesToSave.length > 0 && currentThreadId && messagesToSave[0]?.id !== 'welcome') {
       try {
@@ -214,50 +219,8 @@ export default function ChatPage() {
     let assistantMessagePlaceholderId: string | null = null;
     let accumulatedContent = "";
 
-    // Determine API endpoint
-    const apiEndpoint = assistant?.chatApiEndpoint || "/api/chat";
-    const doubleNewline = String.fromCharCode(10) + String.fromCharCode(10);
-
     try {
-      // For non-streaming direct chat, we expect a JSON response, not SSE
-      if (assistant?.chatApiEndpoint && assistant.chatApiEndpoint === "/api/chat/direct-chat-test") {
-         const response = await fetch(apiEndpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              // assistantId: assistant?.id, // Not strictly needed for this direct endpoint
-              message: currentInput,
-              // imageBase64: currentImageBase64, // The direct-chat-test endpoint doesn't handle images yet
-              conversationHistory: messages.filter(m => m.id !== userMessage.id && m.id !== 'welcome') // Pass history
-            }),
-            signal,
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: "Error del servidor.", details: `Status: ${response.status}` }));
-            throw new Error(errorData.details || errorData.error || `Error: ${response.status}`);
-          }
-
-          const data = await response.json();
-          
-          if (data.message && data.message.content) {
-            const assistantMessage: Message = {
-              id: `assistant-${Date.now()}`,
-              role: "assistant",
-              content: data.message.content,
-              timestamp: new Date(),
-              isStreaming: false,
-            };
-            setMessages((prev) => [...prev, assistantMessage]);
-          } else if (data.error) {
-             throw new Error(data.details || data.error);
-          }
-          setIsLoading(false);
-          return;
-      }
-
-      // --- Default Streaming Logic (for /api/chat) ---
-      const response = await fetch(apiEndpoint, {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -265,6 +228,7 @@ export default function ChatPage() {
           message: currentInput,
           imageBase64: currentImageBase64,
           threadId: currentThreadId,
+          // employeeToken: "some_token_if_needed" // Ejemplo si se necesitara
         }),
         signal,
       });
@@ -288,7 +252,7 @@ export default function ChatPage() {
         {
           id: assistantMessagePlaceholderId!,
           role: "assistant",
-          content: "", 
+          content: "", // Inicia vacío, se llenará con el stream
           timestamp: new Date(),
           isStreaming: true,
         },
@@ -301,9 +265,10 @@ export default function ChatPage() {
         buffer += decoder.decode(value, { stream: true });
         let eolIndex;
         
-        while ((eolIndex = buffer.indexOf(doubleNewline)) !== -1) { // Using robust doubleNewline
+        // Procesar cada evento SSE (delimitado por '\n\n')
+        while ((eolIndex = buffer.indexOf('\n\n')) !== -1) {
           const line = buffer.substring(0, eolIndex).trim();
-          buffer = buffer.substring(eolIndex + doubleNewline.length);
+          buffer = buffer.substring(eolIndex + 2);
 
           if (line.startsWith("data:")) {
             const jsonData = line.substring(5).trim();
@@ -315,10 +280,12 @@ export default function ChatPage() {
                 localStorage.setItem(`threadId_${assistantId}`, event.threadId);
               }
               
+              // Asegurarse que el threadId se establece incluso si es un hilo existente
               if (event.type === 'thread.info' && event.threadId && !currentThreadId) {
                 setCurrentThreadId(event.threadId);
                 localStorage.setItem(`threadId_${assistantId}`, event.threadId);
               }
+
 
               switch (event.type) {
                 case 'thread.message.delta':
@@ -332,20 +299,23 @@ export default function ChatPage() {
                   }
                   break;
                 case 'thread.message.completed':
+                  // Actualizar el ID del mensaje al ID real de OpenAI y marcar como no streaming
                   setMessages(prev => prev.map(msg => 
                     msg.id === assistantMessagePlaceholderId 
                       ? { ...msg, content: accumulatedContent, isStreaming: false, id: event.data.id } 
                       : msg
                   ));
-                  assistantMessagePlaceholderId = null; 
+                  assistantMessagePlaceholderId = null; // Resetea para el próximo mensaje
                   accumulatedContent = "";
                   break;
                 case 'thread.run.created':
+                  // Podrías usar esto para algún indicador específico si lo necesitas
                   console.log("Run created:", event.data.id);
-                  setIsLoading(true); 
+                  setIsLoading(true); // Asegurar que sigue cargando
                   break;
                 case 'thread.run.completed':
                   setIsLoading(false);
+                  // Si el último mensaje del asistente aún estaba en streaming, marcarlo como completo
                   setMessages(prev => prev.map(msg =>
                     (msg.role === 'assistant' && msg.isStreaming)
                       ? { ...msg, isStreaming: false }
@@ -361,25 +331,26 @@ export default function ChatPage() {
                     setMessages(prev => prev.filter(msg => msg.id !== assistantMessagePlaceholderId));
                   }
                   break;
-                case 'error': 
+                case 'error': // Errores enviados desde nuestro backend via SSE
                   setError(event.data.details || event.data.message || "Error de stream.");
                   setIsLoading(false);
                   if (assistantMessagePlaceholderId) {
                     setMessages(prev => prev.filter(msg => msg.id !== assistantMessagePlaceholderId));
                   }
                   break;
-                case 'stream.ended': 
+                case 'stream.ended': // Evento personalizado para indicar fin del stream desde el backend
                   setIsLoading(false);
+                   // Si el último mensaje del asistente aún estaba en streaming, marcarlo como completo
                   setMessages(prev => prev.map(msg =>
                     (msg.role === 'assistant' && msg.isStreaming)
                       ? { ...msg, isStreaming: false }
                       : msg
                   ));
                   if (event.error) {
-                     setError(prevError => prevError || event.error);
+                     setError(prevError => prevError || event.error); // No sobrescribir un error ya existente
                   }
                   console.log("Stream ended from backend.");
-                  return; 
+                  return; // Salir del bucle de lectura
               }
             } catch (e) {
               console.error("Error parseando JSON del stream:", e, jsonData);
@@ -390,14 +361,18 @@ export default function ChatPage() {
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || "Error de conexión o enviando el mensaje.");
+        // Revertir mensaje de usuario si hay error antes de que el stream comience o por abortar.
          setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
-         setInput(currentInput); 
-         setImageBase64(currentImageBase64); 
+         setInput(currentInput); // Restaurar input
+         setImageBase64(currentImageBase64); // Restaurar imagen
       }
-      if (assistantMessagePlaceholderId) { 
+      if (assistantMessagePlaceholderId) { // Limpiar placeholder si hubo error
         setMessages(prev => prev.filter(msg => msg.id !== assistantMessagePlaceholderId));
       }
     } finally {
+      // Solo set isLoading a false si no fue abortado mientras aún estaba cargando una respuesta de stream.
+      // La lógica de stream.ended o error/completed debería manejar isLoading=false.
+      // Esta es una salvaguarda.
       if (!signal.aborted || messages.every(msg => !msg.isStreaming)) {
          setIsLoading(false);
       }
@@ -416,7 +391,7 @@ export default function ChatPage() {
 
   const startNewConversation = () => {
     if (streamControllerRef.current) {
-      streamControllerRef.current.abort(); 
+      streamControllerRef.current.abort(); // Cancelar stream si está activo
       streamControllerRef.current = null;
     }
     try {
@@ -471,7 +446,7 @@ export default function ChatPage() {
           )}
         </AnimatePresence>
         
-        <div className={`flex-1 overflow-y-auto p-4 sm:p-6 ${error ? "pt-24" : "pt-6"} pb-48 sm:pb-52`}> 
+        <div className={`flex-1 overflow-y-auto p-4 sm:p-6 ${error ? "pt-24" : "pt-6"} pb-48 sm:pb-52`}> {/* Aumentado padding-bottom */}
           <div className="max-w-3xl mx-auto space-y-4">
             <AnimatePresence initial={false}>
               {messages.map((message, index) => (
@@ -584,7 +559,7 @@ export default function ChatPage() {
               <Button
                 onClick={startNewConversation}
                 className="btn-gradient-animated flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-bold shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
-                style={{ backgroundColor: '#2563eb' }} 
+                style={{ backgroundColor: '#2563eb' }} /* Añadir color base para asegurar visibilidad */
               >
                 <span className="spin-slow"><RefreshCw className="h-4 w-4" /></span>
                 Nueva conversación
