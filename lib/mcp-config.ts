@@ -1,8 +1,7 @@
-Leete este documento en docs// lib/mcp-config.ts
+// Leete este documento en docs // lib/mcp-config.ts
 
 import { spawn, ChildProcess } from 'child_process';
-// Reverting to the specific path import WITH .js extension, as per the successful implementation document
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp'; // Removed .js
 
 export interface MCPServerConfig {
   name: string;
@@ -82,7 +81,6 @@ export async function startMCPServer(serverKey: string): Promise<McpServer | nul
     
     await new Promise(resolve => setTimeout(resolve, 3000)); 
     
-    // Using the McpServer constructor as per the successful implementation document
     const server = new McpServer({
       name: config.name,
       version: "1.0.0", 

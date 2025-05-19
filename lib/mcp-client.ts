@@ -1,9 +1,8 @@
 // lib/mcp-client.ts
 
-// Reverting to specific path imports WITH .js extension, as per the successful implementation document
-import { McpClient, McpClientOptions, McpClientToolDefinition } from '@modelcontextprotocol/sdk/client/mcp.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpClient, McpClientOptions, McpClientToolDefinition } from '@modelcontextprotocol/sdk/client/mcp';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio';
+// McpServer is used in mcp-config, not directly here.
 
 import { startMCPServer, stopMCPServer, mcpServers, MCPServerConfig } from './mcp-config';
 
@@ -32,7 +31,7 @@ export class MCPManager {
     try {
       const clientOptions: McpClientOptions = options || {
         clientName: "Asistente-IA-v02",
-        clientVersion: "1.0.1", // Consistent with successful implementation example
+        clientVersion: "1.0.1",
       };
       this.client = new McpClient(clientOptions);
       console.log(`[MCPManager] McpClient initialized (Name: ${clientOptions.clientName}, Version: ${clientOptions.clientVersion})`);
@@ -74,7 +73,6 @@ export class MCPManager {
       }
       
       console.log(`[MCPManager] Creating StdioClientTransport for server ${serverKey} (PID: ${serverConfig.process.pid})`);
-      // Using StdioClientTransport as per the successful implementation document
       const transport = new StdioClientTransport({
         serverProcess: serverConfig.process,
       });
@@ -116,7 +114,6 @@ export class MCPManager {
     
     try {
       console.log(`[MCPManager] Fetching capabilities for server ${serverKey} (via global client capabilities)`);
-      // Using getCapabilities as per the successful implementation document
       const capabilities = await this.client.getCapabilities();
       const allTools = capabilities.tools || {};
       
@@ -169,7 +166,6 @@ export class MCPManager {
     
     try {
       console.log(`[MCPManager] Executing tool '${toolNameToExecute}' with params:`, paramsToExecute, `(Server hint: ${serverKeyForTool || 'any'})`);
-      // Using executeTool as per the successful implementation document
       const result = await this.client.executeTool(toolNameToExecute, paramsToExecute);
       console.log(`[MCPManager] Tool '${toolNameToExecute}' executed successfully.`);
       return result;
@@ -192,7 +188,6 @@ export class MCPManager {
         try {
             if (this.client) {
                 console.log(`[MCPManager] Disconnecting McpClient from transport for server ${serverKey}...`);
-                // Using disconnect as per the successful implementation document
                 await this.client.disconnect(transport); 
             }
         } catch (error) {
