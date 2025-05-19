@@ -1,6 +1,6 @@
 // lib/mcp-client.ts
 
-import { McpClient, McpClientOptions, McpClientToolDefinition, StdioClientTransport } from '@modelcontextprotocol/sdk';
+import { McpClient, McpClientOptions, McpClientToolDefinition, StdioClientTransport } from '@modelcontextprotocol/sdk/client';
 // McpServer is used in mcp-config, not directly here.
 
 import { startMCPServer, stopMCPServer, mcpServers, MCPServerConfig } from './mcp-config';
@@ -123,6 +123,9 @@ export class MCPManager {
       }));
       
       console.log(`[MCPManager] Tools for ${serverKey} (potentially all tools from client):`, toolsArray.map(t => t.name));
+      // Note: This gets ALL tools from the client. If you need server-specific tools filtering,
+      // and the SDK doesn't provide that directly via getCapabilities(serverKey),
+      // you might need to adjust logic here or in how tools are registered/discovered.
       return toolsArray;
     } catch (error) {
       console.error(`[MCPManager] Error getting tools for server ${serverKey}:`, error);
@@ -139,22 +142,27 @@ export class MCPManager {
     let paramsToExecute: any;
     let serverKeyForTool: string | undefined = undefined;
 
-    if (paramsIfServerKeyFirst !== undefined) {
+    // Determine if the first argument is a serverKey or the toolName itself
+    if (paramsIfServerKeyFirst !== undefined) { // serverKey, toolName, params
         serverKeyForTool = serverKeyOrToolName;
         toolNameToExecute = toolNameOrParams as string;
         paramsToExecute = paramsIfServerKeyFirst;
-    } else {
+    } else { // toolName (possibly with server prefix), params
         toolNameToExecute = serverKeyOrToolName;
         paramsToExecute = toolNameOrParams;
+        // Attempt to infer serverKey if toolName is like "serverKey.actualToolName"
         if(toolNameToExecute.includes('.')) {
             const parts = toolNameToExecute.split('.');
             const potentialServerKey = parts[0];
+            // Check if this potentialServerKey is a configured server
             if (mcpServers[potentialServerKey]) {
                 serverKeyForTool = potentialServerKey;
+                // toolNameToExecute = parts.slice(1).join('.'); // Keep full name for client.executeTool
             }
         }
     }
 
+    // If a serverKey is identified (either passed or inferred) and not connected, try to connect
     if (serverKeyForTool && (!this.activeServerConfigs.has(serverKeyForTool) || !this.transports.has(serverKeyForTool))) {
       console.warn(`[MCPManager] Server ${serverKeyForTool} is not actively connected for tool ${toolNameToExecute}. Attempting to connect.`);
       const connected = await this.connectToServer(serverKeyForTool);
@@ -164,6 +172,14 @@ export class MCPManager {
     }
     
     try {
+      // The McpClient's executeTool method might handle server-specific routing if tool names are unique
+      // or if the serverKey was used to establish a specific connection context previously.
+      // If tools can have the same name across different servers, the client or the server needs a way to disambiguate.
+      // The current McpClient might send to the "active" or "last connected" transport if not specified.
+      // For simplicity, we assume toolNameToExecute is globally unique or prefixed like "serverKey.tool"
+      // if it needs to target a specific server when multiple are connected to the same client instance.
+      // The MCP SDK's `client.executeTool(toolName, params)` doesn't explicitly take a serverKey.
+      // It relies on the toolName being unique or the client being connected to the correct server context.
       console.log(`[MCPManager] Executing tool '${toolNameToExecute}' with params:`, paramsToExecute, `(Server hint: ${serverKeyForTool || 'any'})`);
       const result = await this.client.executeTool(toolNameToExecute, paramsToExecute);
       console.log(`[MCPManager] Tool '${toolNameToExecute}' executed successfully.`);
@@ -183,23 +199,29 @@ export class MCPManager {
     const transport = this.transports.get(serverKey);
     if (!transport) {
       console.warn(`[MCPManager] No transport found for server ${serverKey} during disconnect, though it was marked active.`);
+      // Proceed to stop the server process anyway if configured
     } else {
         try {
-            if (this.client) {
+            if (this.client && this.client.getTransportStatus(transport) !== 'disconnected') {
                 console.log(`[MCPManager] Disconnecting McpClient from transport for server ${serverKey}...`);
                 await this.client.disconnect(transport); 
+            } else if (this.client && this.client.getTransportStatus(transport) === 'disconnected') {
+                console.log(`[MCPManager] Transport for server ${serverKey} already disconnected.`);
             }
         } catch (error) {
+            // Log error but continue to ensure server process stop is attempted
             console.error(`[MCPManager] Error disconnecting client from transport for ${serverKey}:`, error);
         }
     }
 
     console.log(`[MCPManager] Stopping server process for ${serverKey}...`);
+    // stopMCPServer should handle if the process exists and needs stopping.
+    // It's updated in mcp-config.ts to be more robust.
     stopMCPServer(serverKey); 
     
     this.activeServerConfigs.delete(serverKey);
     this.transports.delete(serverKey);
-    console.log(`[MCPManager] Server ${serverKey} fully disconnected and cleaned up.`);
+    console.log(`[MCPManager] Server ${serverKey} fully disconnected and cleaned up from MCPManager.`);
     return true;
   }
   
@@ -207,20 +229,28 @@ export class MCPManager {
     console.log("[MCPManager] Cleaning up McpClient and all active server connections...");
     const serverKeysToDisconnect = Array.from(this.activeServerConfigs.keys());
     for (const serverKey of serverKeysToDisconnect) {
-      await this.disconnectFromServer(serverKey);
+      await this.disconnectFromServer(serverKey); // disconnectFromServer now also calls stopMCPServer
     }
+    // Ensure maps are cleared even if disconnectFromServer had issues
     this.activeServerConfigs.clear();
     this.transports.clear();
     
+    // Additional check for any servers in mcpServers that might have running processes
+    // not tracked in activeServerConfigs (e.g., due to partial initialization failure)
     Object.keys(mcpServers).forEach(serverKey => {
         if (mcpServers[serverKey].process && !mcpServers[serverKey].process?.killed) {
-            console.log(`[MCPManager] Cleaning up lingering server process from mcp-config for ${serverKey}`);
-            stopMCPServer(serverKey);
+            console.log(`[MCPManager] Cleaning up potentially lingering server process from mcp-config for ${serverKey}`);
+            stopMCPServer(serverKey); // stopMCPServer should be idempotent
         }
     });
 
-    this.client = null;
-    console.log("[MCPManager] McpClient instance nullified and all server connections closed.");
+    if (this.client) {
+        // McpClient itself might not have a generic "close" or "destroy" method.
+        // Disconnecting all transports is the primary cleanup for it.
+        this.client = null; 
+        console.log("[MCPManager] McpClient instance nullified.");
+    }
+    console.log("[MCPManager] MCPManager cleanup complete.");
   }
 }
 
