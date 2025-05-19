@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { ArrowRight, Search } from 'lucide-react';
-import { AssistantCard } from "@/components/AssistantCard";
+import { ArrowRight } from 'lucide-react';
 import SmallRotatingLogo from "./components/SmallRotatingLogo";
 
 const features = [
@@ -180,105 +179,33 @@ export default function Home() {
 
         {/* Asistentes Section */}
         <section id="asistentes" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
             <motion.div 
-              className="text-center mb-12"
+              className="mb-12"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Nuestros Asistentes</h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                Selecciona el asistente que mejor se adapte a tus necesidades
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Descubre Nuestros Asistentes de IA</h2>
+              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                Explora nuestra colección de asistentes inteligentes diseñados para potenciar tu productividad y simplificar tus tareas diarias.
               </p>
               
-              <div className="mt-8 max-w-md mx-auto">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Buscar asistentes..."
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-lg bg-black/30 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
+              <motion.div
+                className="mt-8"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link 
+                  href="/assistants"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Ver todos los asistentes
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </motion.div>
             </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <motion.div
-                custom={0}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <AssistantCard 
-                  title="Asistente OpenAI" 
-                  description="Asistente basado en GPT-4 con capacidades avanzadas de procesamiento de lenguaje natural." 
-                  route="/chat/openai"
-                  badge="Nuevo"
-                  badgeColor="bg-blue-100 text-blue-800"
-                  icon="message-circle"
-                  className="h-full bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/30 transition-colors"
-                />
-              </motion.div>
-              
-              <motion.div
-                custom={1}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <AssistantCard 
-                  title="Asistente MCP" 
-                  description="Potenciado con herramientas externas para búsqueda web, clima, calculadora, divisas y noticias." 
-                  route="/chat/mcp"
-                  badge="MCP"
-                  badgeColor="bg-emerald-100 text-emerald-800"
-                  icon="cpu"
-                  className="h-full bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/30 transition-colors"
-                />
-              </motion.div>
-              
-              <motion.div
-                custom={2}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={cardVariants}
-                className="h-full"
-              >
-                <div className="h-full bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-blue-500/30 transition-colors flex flex-col">
-                  <div className="flex items-center mb-4">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-purple-500/20 text-purple-400">
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </div>
-                    <h3 className="ml-4 text-xl font-semibold">¿Tienes alguna solicitud especial?</h3>
-                  </div>
-                  <p className="text-gray-400 flex-grow">
-                    Estamos constantemente desarrollando nuevos asistentes. ¡Déjanos saber qué tipo de asistente te gustaría ver en el futuro!
-                  </p>
-                  <div className="mt-6">
-                    <Link
-                      href="#"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
-                    >
-                      Enviar sugerencia
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
           </div>
         </section>
 

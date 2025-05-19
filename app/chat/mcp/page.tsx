@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Cpu, Send, ArrowLeft, Loader2, Bot, User } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import SmallRotatingLogo from "../../components/SmallRotatingLogo";
+// import SmallRotatingLogo from "../components/SmallRotatingLogo"; // Ya no se usará para el fondo principal
 
 interface ChatMessage {
   role: "user" | "assistant" | "tool";
@@ -172,23 +172,24 @@ export default function MCPChatPage() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/80 to-black/90"></div>
         
-        {/* Logo giratorio en el fondo */}
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] pointer-events-none">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-full h-full">
-              <div 
-                className="absolute inset-0 bg-[radial-gradient(circle_at_center,#8b5cf640_0,transparent_60%)] rounded-full"
-                style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transition: 'transform 0.1s ease-out',
-                  filter: 'blur(80px)'
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <SmallRotatingLogo />
-              </div>
-            </div>
-          </div>
+        {/* Fondo con efecto de rotación (estilo página de inicio) */}
+        <div
+          className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none"
+          style={{ filter: 'blur(24px)', opacity: 0.10 }} // Ajusta el blur y opacidad según prefieras
+        >
+          <motion.div
+            className="w-full h-full flex items-center justify-center"
+            style={{ rotate: rotation }} // rotation viene del estado y useEffect que ya tienes
+          >
+            <Image
+              src="/LogosNuevos/logo_orbia_sin_texto.png"
+              alt="Orbia Logo Fondo"
+              width={700} // Tamaño grande
+              height={700}
+              className="object-contain opacity-60" // Ajuste de opacidad sin blur
+              priority
+            />
+          </motion.div>
         </div>
       </div>
 
