@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, ArrowRight, Cpu, MessageCircle, TrafficCone } from "lucide-react";
+import { Search, ArrowRight, Cpu, MessageCircle, TrafficCone, Palette, Zap } from "lucide-react"; // Added Palette, Zap
 import Image from "next/image";
-// import SmallRotatingLogo from "../components/SmallRotatingLogo"; // Ya no se usará para el fondo principal
 
-interface Assistant {
+interface AssistantCardInfo {
   id: string;
   title: string;
   description: string;
@@ -16,11 +15,14 @@ interface Assistant {
   color: string;
 }
 
-const assistants: Assistant[] = [
+// Lista de asistentes para las tarjetas
+// Debería idealmente generarse a partir de lib/assistants.ts para evitar duplicación,
+// pero por ahora la mantenemos así según la estructura actual del proyecto.
+const assistantCards: AssistantCardInfo[] = [
   {
     id: "asistente-senalizacion",
     title: "Asistente de Señalización",
-    description: "Identifica y explica señales de tráfico con inteligencia artificial.",
+    description: "Identifica y explica señales de tráfico (OpenAI).",
     icon: <TrafficCone className="w-8 h-8 text-yellow-400" />,
     href: "/chat/asistente-senalizacion",
     color: "from-yellow-500 to-yellow-600"
@@ -28,10 +30,27 @@ const assistants: Assistant[] = [
   {
     id: "mcp",
     title: "Asistente MCP",
-    description: "Asistente personalizado con capacidades avanzadas de procesamiento y herramientas especializadas.",
+    description: "Asistente con herramientas y capacidades locales.",
     icon: <Cpu className="w-8 h-8 text-purple-400" />,
     href: "/chat/mcp",
     color: "from-purple-500 to-purple-600"
+  },
+  // --- Tarjetas para Asistentes V3 ---
+  {
+    id: "senalizacion-v3",
+    title: "Señalización v3 (Nueva UI)",
+    description: "Señales de tráfico con la nueva interfaz de chat V3.",
+    icon: <Palette className="w-8 h-8 text-orange-400" />,
+    href: "/chat-v3/senalizacion-v3", // Enlace a la nueva UI de chat
+    color: "from-orange-500 to-red-600" // Colores para la tarjeta
+  },
+  {
+    id: "mcp-v3",
+    title: "MCP v3 (Nueva UI)",
+    description: "Asistente MCP con la nueva interfaz de chat V3.",
+    icon: <Zap className="w-8 h-8 text-rose-400" />,
+    href: "/chat-v3/mcp-v3", // Enlace a la nueva UI de chat
+    color: "from-rose-500 to-pink-600" // Colores para la tarjeta
   }
 ];
 
@@ -69,35 +88,32 @@ export default function AssistantsPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const filteredAssistants = assistants.filter(assistant => 
+  const filteredAssistants = assistantCards.filter(assistant => 
     assistant.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     assistant.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
-      {/* Fondo con efecto de partículas y gradiente */}
       <div className="fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/30 to-transparent"></div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/90"></div>
-        
-        {/* Fondo con efecto de rotación (estilo página de inicio) */}
         <div
           className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none"
-          style={{ filter: 'blur(24px)', opacity: 0.10 }} // Ajusta el blur y opacidad según prefieras
+          style={{ filter: 'blur(24px)', opacity: 0.10 }}
         >
           <motion.div
             className="w-full h-full flex items-center justify-center"
-            style={{ rotate: rotation }} // rotation viene del estado y useEffect que ya tienes
+            style={{ rotate: rotation }}
           >
             <Image
               src="/LogosNuevos/logo_orbia_sin_texto.png"
               alt="Orbia Logo Fondo"
-              width={700} // Tamaño grande
+              width={700} 
               height={700}
-              className="object-contain opacity-60" // Ajuste de opacidad sin blur
+              className="object-contain opacity-60"
               priority
             />
           </motion.div>
@@ -145,7 +161,7 @@ export default function AssistantsPage() {
           initial="hidden"
           animate="visible"
         >
-          {filteredAssistants.map((assistant, index) => (
+          {filteredAssistants.map((assistant) => (
             <motion.div 
               key={assistant.id}
               variants={itemVariants}

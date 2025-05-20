@@ -14,6 +14,8 @@ import {
   MessageSquare, 
   TrafficCone, 
   LucideIcon, 
+  Zap, // Para un ícono diferente para V3 si se desea
+  Palette // Para un ícono diferente para V3 si se desea
 } from "lucide-react";
 
 // Define la estructura de un asistente
@@ -49,7 +51,7 @@ export const assistants: Assistant[] = [
   },
   {
     id: "asistente-senalizacion", 
-    assistant_id: "asst_MXuUc0TcV7aPYkLGbN5glitq", // ID real del asistente OpenAI
+    assistant_id: "asst_MXuUc0TcV7aPYkLGbN5glitq", 
     name: "Asistente de Señalización", 
     shortDescription: "Identifica y explica señales de tráfico (OpenAI).",
     description: "Proporciona información sobre señales de tráfico a partir de imágenes o descripciones. Utiliza un asistente de OpenAI especializado.", 
@@ -63,6 +65,25 @@ export const assistants: Assistant[] = [
     description: "Asistente personalizado con capacidades avanzadas de procesamiento y herramientas especializadas para tareas específicas.",
     iconType: Cpu,
     bgColor: "bg-purple-600",
+  },
+  // --- Nuevos Asistentes V3 ---
+  {
+    id: "senalizacion-v3", 
+    assistant_id: "asst_MXuUc0TcV7aPYkLGbN5glitq", // Misma funcionalidad que el original
+    name: "Señalización v3", 
+    shortDescription: "Señales de tráfico con la nueva interfaz de chat.",
+    description: "Identifica y explica señales de tráfico utilizando el asistente de OpenAI, presentado en la nueva interfaz de chat V3.", 
+    iconType: Palette, // Nuevo ícono para distinguirlo
+    bgColor: "bg-orange-600", // Nuevo color para la tarjeta
+  },
+  {
+    id: "mcp-v3",
+    name: "MCP v3",
+    shortDescription: "Asistente MCP con la nueva interfaz de chat.",
+    description: "Interactúa con el Asistente MCP (herramientas locales) utilizando la nueva interfaz de chat V3.",
+    iconType: Zap, // Nuevo ícono para distinguirlo
+    bgColor: "bg-rose-600", // Nuevo color para la tarjeta
+    // No assistant_id de OpenAI aquí
   },
 ];
 
