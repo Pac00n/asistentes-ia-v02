@@ -49,6 +49,10 @@
   --border: 217.2 32.6% 17.5%; /* Dark Border */
   --input: 217.2 32.6% 17.5%;
   --ring: 217.2 32.6% 17.5%; /* Ring color */
+  
+  /* Variables para el texto en modo oscuro */
+  --text-primary: 255, 255, 255; /* Blanco puro */
+  --text-opacity: 1; /* Opacidad completa */
   /* --radius is inherited from :root */
 }
 
@@ -124,4 +128,42 @@ textarea {
 /* Gradient text */
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-indigo-600;
+}
+
+/* Estilos para asegurar que el texto en los globos de chat sea completamente opaco */
+.chat-message p,
+.chat-message div,
+.chat-message span {
+  color: rgb(255, 255, 255) !important;
+  opacity: 1 !important;
+  --tw-text-opacity: 1 !important;
+}
+
+/* Estilos específicos para los mensajes del asistente */
+.bg-gradient-to-br + .whitespace-pre-wrap * {
+  color: rgb(255, 255, 255) !important;
+  opacity: 1 !important;
+}
+
+/* Asegurar que el texto en los mensajes del sistema también sea visible */
+.bg-gray-700\/50 {
+  color: rgb(255, 255, 255) !important;
+  opacity: 1 !important;
+}
+
+/* Estilos para el contenedor de mensajes */
+.max-w-\[80\%\], .md\:max-w-\[70\%\] {
+  --tw-text-opacity: 1 !important;
+}
+
+/* Asegurar que el texto en los mensajes sea blanco */
+.text-white {
+  --tw-text-opacity: 1 !important;
+  color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
+}
+
+/* Asegurar que el texto en los mensajes del sistema sea visible */
+.text-gray-400 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
 }

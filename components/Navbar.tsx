@@ -44,12 +44,12 @@ export default function Navbar() {
   return (
     <>
       {/* Botón de Menú Flotante Rediseñado */}
-      <div className="fixed top-4 left-4 z-[100]"> {/* Aumentado z-index por si acaso */}
+      <div className="fixed top-4 left-4 z-[100]">
         <motion.button
           onClick={toggleMenu}
           className={`p-3 rounded-full flex items-center justify-center 
                       focus:outline-none transition-all duration-200 ease-in-out
-                      bg-gray-800/60 hover:bg-gray-700/80 text-white
+                      bg-gray-800/60 hover:bg-gray-700/80 text-white backdrop-blur-sm
                       shadow-lg backdrop-blur-sm w-12 h-12`} // Tamaño explícito para el botón
           aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           whileHover={{ scale: 1.1, rotate: isMenuOpen ? 0 : 10 }}
@@ -95,7 +95,7 @@ export default function Navbar() {
             exit={{ opacity: 0 }}
           />
           <motion.div 
-            className="fixed top-0 left-0 h-full w-72 bg-gray-900 text-gray-100 z-[100] shadow-2xl border-r border-gray-700"
+            className="fixed top-0 left-0 h-full w-72 bg-gray-900/80 backdrop-blur-sm text-gray-100 z-[100] shadow-2xl border-r border-gray-800/50"
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}

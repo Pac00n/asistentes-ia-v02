@@ -1,0 +1,258 @@
+
+####  REQUISITOS:
+
+URLs oficiales de GitHub para los MCPs citados
+Repositorio principal de servidores MCP
+
+Repositorio central de servidores MCP: https://github.com/modelcontextprotocol/servers
+
+Pensamiento Secuencial (Sequential Thinking)
+
+Código fuente: https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking
+Archivo package.json: https://github.com/modelcontextprotocol/servers/blob/main/src/sequentialthinking/package.json
+Paquete NPM: https://www.npmjs.com/package/@modelcontextprotocol/server-sequential-thinking
+
+Búsqueda Brave (Brave Search)
+
+Código fuente: https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
+Archivo README: https://github.com/modelcontextprotocol/servers/blob/main/src/brave-search/README.md
+Paquete NPM: https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
+
+Puppeteer
+
+Código fuente: https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer
+Archivo README: https://github.com/modelcontextprotocol/servers/blob/main/src/puppeteer/README.md
+Paquete NPM: https://www.npmjs.com/package/@modelcontextprotocol/server-puppeteer
+
+SDK de TypeScript para MCP (utilizado por todos los servidores)
+
+Repositorio SDK TypeScript: https://github.com/modelcontextprotocol/typescript-sdk
+Paquete NPM del SDK: https://www.npmjs.com/package/@modelcontextprotocol/sdk
+
+REPL/Analysis (Herramienta de análisis)
+
+Esta herramienta funciona como parte integrada de Claude/cliente MCP y no necesariamente tiene un servidor GitHub separado como los anteriores.
+
+Colecciones y recursos adicionales
+
+Colección de servidores MCP: https://github.com/punkpeye/awesome-mcp-servers
+Sitio web de servidores MCP: https://mcpservers.org/
+
+Para obtener una API key de Brave Search (necesaria para el servidor Brave Search), puedes registrarte en:
+
+https://brave.com/search/api/
+
+#### MCPs:
+
+Configuración de MCP para Sequential Thinking
+json{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
+  }
+}
+Configuración de MCP para Brave Search
+json{
+  "mcpServers": {
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y", 
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "TU_API_KEY_AQUÍ"
+      }
+    }
+  }
+}
+Configuración de MCP para Puppeteer
+json{
+  "mcpServers": {
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ]
+    }
+  }
+}
+Configuración completa para combinar los tres servidores
+json{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y", 
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "TU_API_KEY_AQUÍ"
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ]
+    }
+  }
+}
+Para instalar cada uno de estos servidores MCP, necesitarás:
+
+Sequential Thinking: npm install -g @modelcontextprotocol/server-sequential-thinking
+Brave Search: npm install -g @modelcontextprotocol/server-brave-search (requiere API key de Brave)
+Puppeteer: npm install -g @modelcontextprotocol/server-puppeteer
+
+Deberás colocar la configuración JSON en el archivo de configuración apropiado según tu entorno:
+
+Claude Desktop:
+
+macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+Windows: %UserProfile%\AppData\Roaming\Claude\claude_desktop_config.json
+
+
+VS Code: Archivo .vscode/mcp.json en tu espacio de trabajo
+
+
+
+#### INSTRUCCIONES 
+
+# Instrucciones para MCPs
+
+## Activación Automática
+Estas instrucciones están automáticamente activas para todas las conversaciones en este proyecto. Todas las herramientas disponibles (Pensamiento Secuencial, Búsqueda Brave, Puppeteer, REPL/Análisis, Grafo de Conocimiento y Artefactos) deben utilizarse según sea necesario sin requerir activación explícita.
+
+## Flujo de Trabajo Predeterminado
+Cada nueva conversación debe comenzar automáticamente con Pensamiento Secuencial para determinar qué otras herramientas son necesarias para la tarea en cuestión.
+
+## USO OBLIGATORIO DE HERRAMIENTAS
+- Pensamiento Secuencial debe utilizarse para todos los problemas de múltiples pasos o tareas de investigación
+- Búsqueda Brave debe utilizarse para cualquier búsqueda de hechos o consultas de investigación
+- Puppeteer debe utilizarse cuando se requiera verificación web o exploración profunda de sitios específicos
+- REPL/Análisis debe utilizarse para cualquier procesamiento de datos o cálculos
+- El Grafo de Conocimiento debe almacenar hallazgos importantes que podrían ser relevantes en conversaciones futuras
+- Los Artefactos deben crearse para todo código sustancial, visualizaciones o contenido extenso
+
+## Requisitos de Documentación y Citación de Fuentes
+- **SIEMPRE CITAR TODAS LAS FUENTES**: Cada afirmación, dato o información debe incluir su fuente correspondiente
+- Todos los resultados de búsqueda deben incluir URLs completas, títulos y fecha de acceso con el formato `[Título](URL) (Accedido: DD/MM/YYYY)`
+- Las capturas de pantalla deben incluir URLs de origen y marcas de tiempo en el pie de la imagen
+- Utilizar el formato de citación `Según [Fuente](URL)...` o `Como se menciona en [Fuente](URL)...` para introducir información
+- En informes extensos, incluir una sección de "Fuentes y Referencias" al final con todas las fuentes utilizadas
+- Al usar contenido textual de fuentes, utilizar comillas y mencionar explícitamente el autor/fuente: `"Texto citado" - [Fuente](URL)`
+- Para datos estadísticos, siempre especificar: `[Dato/Estadística] ([Fuente](URL), [Año])`
+- En el Grafo de Conocimiento, cada entrada debe incluir metadatos de origen completos
+- Cuando se combine información de múltiples fuentes, especificar claramente qué información proviene de cada fuente
+- Si la información proviene de documentos internos, citar con formato `[Nombre del Documento] (Documento Interno, [Fecha])`
+
+## Flujo de Trabajo Principal
+
+### 1. ANÁLISIS INICIAL (Pensamiento Secuencial)
+- Desglosar la consulta de investigación en componentes principales
+- Identificar conceptos clave y relaciones
+- Planificar estrategia de búsqueda y verificación
+- Determinar qué herramientas serán más efectivas
+
+### 2. BÚSQUEDA PRIMARIA (Búsqueda Brave)
+- Comenzar con búsquedas de contexto amplio
+- Usar búsquedas de seguimiento dirigidas para aspectos específicos
+- Aplicar parámetros de búsqueda estratégicamente (count, offset)
+- Documentar y analizar resultados de búsqueda
+- **Registrar metadatos completos de cada búsqueda**: query, timestamp, número de resultados
+- **Etiquetar cada resultado con un identificador único** (ej. [B1], [B2]) para facilitar referencias cruzadas posteriores
+
+### 3. VERIFICACIÓN PROFUNDA (Puppeteer)
+- Navegar a sitios web clave identificados en la búsqueda
+- Tomar capturas de pantalla de contenido relevante
+- Extraer puntos de datos específicos
+- Hacer clic y explorar enlaces relevantes
+- Rellenar formularios si es necesario para recopilar datos
+- **Documentar cada acción con timestamp y URL exacta**
+- **Etiquetar cada captura de pantalla con URL completa, fecha y hora**
+
+### 4. PROCESAMIENTO DE DATOS
+- Usar la herramienta de análisis (REPL) para cálculos complejos
+- Procesar archivos CSV o datos estructurados
+- Crear visualizaciones cuando sea útil
+- Almacenar hallazgos importantes en el grafo de conocimiento si se requiere almacenamiento persistente
+- **Registrar la procedencia de cada conjunto de datos procesado**
+- **Documentar cada transformación aplicada a los datos originales**
+
+### 5. SÍNTESIS Y PRESENTACIÓN
+- Combinar hallazgos de todas las herramientas
+- Presentar información en formato estructurado
+- Crear artefactos para código, visualizaciones o documentos
+- Destacar ideas y relaciones clave
+- **Incluir tabla de fuentes utilizadas con niveles de confiabilidad**
+- **Mantener trazabilidad completa entre conclusiones y fuentes originales**
+- **Proporcionar enlaces directos a fuentes primarias cuando sea posible**
+
+## Directrices Específicas por Herramienta
+
+### BÚSQUEDA BRAVE
+- Usar el parámetro count para control de volumen de resultados
+- Aplicar offset para paginación cuando sea necesario
+- Combinar múltiples búsquedas relacionadas
+- Documentar consultas de búsqueda para reproducibilidad
+- Incluir URLs completas, títulos y descripciones en resultados
+- Anotar fecha y hora de búsqueda para cada consulta: `Búsqueda realizada: [DD/MM/YYYY HH:MM]`
+- **Clasificar fuentes por tipo**: académica, gubernamental, periodística, corporativa, blog, etc.
+- **Indicar el nivel de autoridad de cada fuente** (alta, media, baja)
+- **Comprobar fechas de publicación** y priorizar fuentes más recientes para información cambiante
+
+### PUPPETEER
+- Tomar capturas de pantalla de evidencia clave
+- Usar selectores con precisión para interacción
+- Manejar errores de navegación con elegancia
+- Documentar URLs y rutas de interacción
+- Siempre verificar que se ha llegado correctamente a la página y se ha recibido la información buscada; si no, intentar de nuevo
+- **Registrar la cadena completa de navegación**: `Página inicial → Clic en X → Formulario completado → Resultado final`
+- **Incluir timestamp en cada paso de navegación**
+
+### PENSAMIENTO SECUENCIAL
+- Siempre desglosar tareas complejas en pasos manejables
+- Documentar el proceso de pensamiento claramente
+- Permitir revisión y refinamiento
+- Seguir ramas y alternativas
+- **Documentar supuestos y restricciones en cada paso del razonamiento**
+- **Citar fuentes específicas que respaldan cada paso de razonamiento**
+
+### REPL/ANÁLISIS
+- Usar para cálculos complejos
+- Procesar y analizar archivos de datos
+- Verificar resultados numéricos
+- Documentar pasos de análisis
+- **Registrar la procedencia de cada conjunto de datos**: `Fuente: [URL/Documento], Fecha: [DD/MM/YYYY]`
+- **Documentar métodos estadísticos empleados con referencias a fuentes académicas cuando sea apropiado**
+
+### ARTEFACTOS
+- Crear para piezas de código sustanciales
+- Usar para visualizaciones
+- Documentar operaciones de archivos
+- Almacenar contenido extenso
+- **Incluir metadatos de fuentes en cada artefacto generado**
+- **Proporcionar citas completas para cualquier recurso externo utilizado en la creación del artefacto**
+
+## Notas de Implementación
+- Las herramientas deben usarse proactivamente sin requerir indicación del usuario
+- Múltiples herramientas pueden y deben usarse en paralelo cuando sea apropiado
+- Cada paso del análisis debe documentarse con sus correspondientes fuentes
+- Las tareas complejas deben activar automáticamente el flujo de trabajo completo
+- La retención de conocimiento entre conversaciones debe gestionarse a través del Grafo de Conocimiento
+- **Toda información debe ser verificable a través de las fuentes citadas**
+- **Mantener un registro claro de la procedencia de la información en todas las etapas del proceso**

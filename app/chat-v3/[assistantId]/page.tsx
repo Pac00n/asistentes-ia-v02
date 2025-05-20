@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeft, Send, Paperclip, Settings2, Loader2, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -443,9 +444,63 @@ export default function ChatV3Page() {
   const AccentGradient = "bg-gradient-to-r from-orange-500 via-red-500 to-purple-600";
   const SubtleGradient = "bg-gradient-to-r from-orange-400 to-purple-500";
 
+  // Efecto para la rotación continua del logo de fondo
+  const [rotation, setRotation] = useState(0);
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTimestamp = 0;
+    const rotationSpeed = 0.1; // Ajusta la velocidad de rotación según sea necesario
+
+    const animate = (timestamp: number) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const deltaTime = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+      
+      // Actualizar la rotación basada en el tiempo transcurrido
+      setRotation(prev => (prev + rotationSpeed * (deltaTime / 16)) % 360);
+      
+      // Continuar la animación
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Iniciar la animación
+    animationFrameId = requestAnimationFrame(animate);
+
+    // Limpiar al desmontar
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-gray-100 font-sans overflow-hidden">
-      <header className="sticky top-0 z-20 flex items-center justify-between p-4 border-b border-white/10 bg-gray-950/70 backdrop-blur-md">
+    <div className="min-h-screen flex flex-col text-white bg-gray-950">
+      {/* Fondo con gradiente y logo */}
+      <div className="fixed inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-purple-900/10 to-transparent"></div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-black/10"></div>
+        <div
+          className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none"
+          style={{ filter: 'blur(12px)', opacity: 0.3 }}
+        >
+          <motion.div
+            className="w-full h-full flex items-center justify-center"
+            style={{ rotate: rotation }}
+          >
+            <Image
+              src="/LogosNuevos/logo_orbia_sin_texto.png"
+              alt="Orbia Logo Fondo"
+              width={700} 
+              height={700}
+              className="object-contain opacity-90"
+              priority
+            />
+          </motion.div>
+        </div>
+      </div>
+      <header className="sticky top-0 z-20 flex items-center justify-between p-4 border-b border-white/10 bg-gray-900/40 backdrop-blur-md">
         <motion.button
           whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
           whileTap={{ scale: 0.95 }}
@@ -470,7 +525,7 @@ export default function ChatV3Page() {
         </motion.button>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 scroll-smooth">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 scroll-smooth bg-transparent">
         <AnimatePresence initial={false}>
           {messages.map((message) => (
             <motion.div
@@ -503,21 +558,29 @@ export default function ChatV3Page() {
                 <div className="whitespace-pre-wrap text-sm leading-relaxed">
                   {message.role === "assistant" && message.isStreaming && !message.content ? (
                     <div className="flex space-x-1 py-1">
-                      <div className="w-2 h-2 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
                   ) : (
-                    <p>{message.role === "assistant" ? formatAssistantMessage(message.content) : message.content}</p>
+                    <div style={{ 
+                      color: 'rgb(255, 255, 255)', 
+                      opacity: 1,
+                      WebkitTextFillColor: 'rgb(255, 255, 255)',
+                      WebkitTextStrokeWidth: '0.2px',
+                      WebkitTextStrokeColor: 'rgba(255, 255, 255, 0.5)'
+                    }}>
+                      {message.role === "assistant" ? formatAssistantMessage(message.content) : message.content}
+                    </div>
                   )}
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   {message.role === "assistant" && message.isStreaming && (
-                    <div className="text-xs text-white/70">
+                    <div className="text-xs text-white">
                       Escribiendo...
                     </div>
                   )}
-                  <span className="text-xs text-white/70 ml-auto">
+                  <span className="text-xs ml-auto" style={{ color: 'rgb(255, 255, 255)' }}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -544,7 +607,7 @@ export default function ChatV3Page() {
         <div ref={messagesEndRef} />
       </main>
 
-      <footer className="sticky bottom-0 z-20 p-3 md:p-4 border-t border-white/10 bg-gray-950/70 backdrop-blur-md">
+      <footer className="mt-auto z-20 p-3 md:p-4 border-t border-white/10 bg-gray-900/40 backdrop-blur-md">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center space-x-2 md:space-x-3">
             <motion.button 
@@ -600,7 +663,7 @@ export default function ChatV3Page() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Escribe un mensaje..."
-                className="flex-1 p-3 rounded-xl bg-gray-800/80 border border-white/10 focus:ring-2 focus:ring-orange-500/70 focus:border-orange-500/70 outline-none transition-all placeholder-gray-500 text-sm text-gray-100"
+                className="flex-1 p-3 rounded-xl bg-gray-900/90 border border-gray-800 focus:ring-2 focus:ring-orange-500/70 focus:border-orange-500/70 outline-none transition-all placeholder-gray-500 text-sm text-gray-100"
                 disabled={isLoading}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {

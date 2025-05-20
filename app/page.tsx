@@ -2,37 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
-import SmallRotatingLogo from "./components/SmallRotatingLogo";
+import { ArrowRight, Zap, Search, MessageCircle, Globe } from 'lucide-react';
 
 const features = [
   {
     name: 'Respuestas Rápidas',
-    description: 'Obtén respuestas instantáneas a tus preguntas con nuestra tecnología de IA avanzada.',
-    icon: 'zap',
+    description: 'Obtén respuestas instantáneas con nuestra tecnología de IA avanzada.',
+    icon: <Zap className="w-8 h-8 text-blue-400" />,
+    color: 'from-blue-500 to-cyan-500',
   },
   {
     name: 'Búsqueda Inteligente',
-    description: 'Encuentra información relevante en segundos con nuestra potente capacidad de búsqueda.',
-    icon: 'search',
+    description: 'Encuentra información relevante en segundos con búsqueda avanzada.',
+    icon: <Search className="w-8 h-8 text-purple-400" />,
+    color: 'from-purple-500 to-fuchsia-500',
   },
   {
     name: 'Asistencia Personalizada',
-    description: 'Interactúa de forma natural con asistentes especializados en diferentes áreas.',
-    icon: 'message-circle',
+    description: 'Interactúa con asistentes especializados en diferentes áreas.',
+    icon: <MessageCircle className="w-8 h-8 text-orange-400" />,
+    color: 'from-orange-500 to-amber-500',
   },
   {
     name: 'Acceso Global',
-    description: 'Disponible en cualquier momento y desde cualquier dispositivo con conexión a internet.',
-    icon: 'globe',
+    description: 'Disponible en cualquier momento y desde cualquier dispositivo.',
+    icon: <Globe className="w-8 h-8 text-emerald-400" />,
+    color: 'from-emerald-500 to-teal-500',
   },
 ];
 
 export default function Home() {
   const [rotation, setRotation] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,243 +45,240 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const cardVariants = {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
+    visible: {
       opacity: 1,
       y: 0,
       transition: {
-        delay: i * 0.1,
-        duration: 0.4,
-        ease: "easeOut"
+        duration: 0.5
       }
-    })
+    }
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white relative overflow-x-hidden">
-      {/* Fondo con efecto de rotación */}
-      <div 
-        className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none"
-        style={{ filter: 'blur(18px)', opacity: 0.15 }}
-      >
-        <motion.div 
-          className="w-full h-full flex items-center justify-center"
-          style={{ rotate: rotation }}
-        >
-          <Image
-            src="/LogosNuevos/logo_orbia_sin_texto.png"
-            alt="Orbia Logo"
-            width={600}
-            height={600}
-            className="object-contain opacity-30"
-          />
-        </motion.div>
+    <div className="min-h-screen text-white bg-gray-950">
+      {/* Fondo con logo giratorio */}
+      <div className="fixed inset-0 bg-gray-950">
+        <div className="fixed inset-0 flex justify-center items-center z-0 pointer-events-none">
+          <motion.div 
+            className="w-full h-full flex items-center justify-center opacity-10"
+            style={{ 
+              rotate: rotation,
+              filter: 'blur(16px)'
+            }}
+          >
+            <Image
+              src="/LogosNuevos/logo_orbia_sin_texto.png"
+              alt="Orbia Logo Fondo"
+              width={700} 
+              height={700}
+              className="object-contain"
+              priority
+            />
+          </motion.div>
+        </div>
       </div>
 
       {/* Contenido principal */}
-      <div className="relative z-10">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 md:pt-36 md:pb-28">
         {/* Hero Section */}
-        <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-8"
+        <motion.div 
+          className="text-center mb-24"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.h1 
+            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <div className="inline-block">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-orange-300 to-pink-400">
+                Potencia tu productividad
+              </span>
+            </div>
+            <div className="mt-2">
+              <span className="text-white">con IA avanzada</span>
+            </div>
+          </motion.h1>
+          
+          <motion.p 
+            className="text-lg text-gray-300 max-w-2xl mx-auto mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            Descubre el poder de la inteligencia artificial con nuestros asistentes especializados.
+          </motion.p>
+          
+          <motion.div 
+            className="mt-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <Link 
+              href="/assistants" 
+              className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-purple-500/20"
             >
-              <SmallRotatingLogo />
-            </motion.div>
-            
-            <motion.h1 
-              className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <span className="block">Potencia tu</span>
-              <span className="text-blue-400">productividad</span>
-            </motion.h1>
-            
-            <motion.p 
-              className="text-xl text-gray-300 max-w-3xl mx-auto mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              Descubre cómo nuestros asistentes de IA pueden transformar tu flujo de trabajo, 
-              automatizar tareas y ofrecerte información valiosa en tiempo real.
-            </motion.p>
-            
-            <motion.div
-              className="flex flex-col sm:flex-row justify-center gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
-              <Link 
-                href="/chat"
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                Comenzar ahora
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link 
-                href="#asistentes"
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg transition-colors"
-              >
-                Explorar asistentes
-              </Link>
-            </motion.div>
-          </div>
-        </section>
+              Explorar Asistentes
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </motion.div>
+        </motion.div>
 
         {/* Features Section */}
-        <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <motion.div 
-              className="text-center mb-16"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Características principales</h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                Todo lo que necesitas para potenciar tu productividad con IA
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.name}
-                  custom={index}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={cardVariants}
-                  className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-blue-500/30 transition-colors"
-                >
-                  <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
-                    <span className="text-blue-400 text-xl">
-                      {feature.icon === 'zap' && '⚡'}
-                      {feature.icon === 'search' && '🔍'}
-                      {feature.icon === 'message-circle' && '💬'}
-                      {feature.icon === 'globe' && '🌐'}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.name}</h3>
-                  <p className="text-gray-400">{feature.description}</p>
-                </motion.div>
-              ))}
+        <motion.div 
+          className="mt-24"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <motion.h2 
+            className="text-3xl font-bold text-center mb-12"
+            variants={itemVariants}
+          >
+            <div className="inline-block">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-orange-300 to-pink-400">
+                Características principales
+              </span>
             </div>
+          </motion.h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.name}
+                variants={itemVariants}
+                className="bg-gray-900/40 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-orange-500/30 transition-all duration-300 h-full"
+              >
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-gradient-to-r ${feature.color} bg-opacity-20`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">{feature.name}</h3>
+                <p className="text-gray-300">{feature.description}</p>
+              </motion.div>
+            ))}
           </div>
-        </section>
+        </motion.div>
 
         {/* Asistentes Section */}
-        <section id="asistentes" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div 
-              className="mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+        <motion.section 
+          id="asistentes" 
+          className="mt-32 py-20"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <motion.div 
+            className="max-w-4xl mx-auto text-center mb-16"
+            variants={itemVariants}
+          >
+            <h2 className="text-3xl font-bold mb-6">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-orange-300 to-pink-400">
+                Nuestros Asistentes
+              </span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Explora nuestra colección de asistentes inteligentes diseñados para potenciar tu productividad.
+            </p>
+          </motion.div>
+          
+          <motion.div
+            className="mt-10 text-center"
+            variants={itemVariants}
+          >
+            <Link 
+              href="/assistants"
+              className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-purple-500/20"
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Descubre Nuestros Asistentes de IA</h2>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Explora nuestra colección de asistentes inteligentes diseñados para potenciar tu productividad y simplificar tus tareas diarias.
-              </p>
-              
-              <motion.div
-                className="mt-8"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link 
-                  href="/assistants"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Ver todos los asistentes
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
+              Explorar Asistentes
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </motion.div>
+        </motion.section>
 
         {/* CTA Section */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-blue-800">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h2 
-              className="text-3xl md:text-4xl font-bold mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+        <motion.section 
+          className="mt-32 py-20 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-2xl"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <motion.div 
+            className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8"
+            variants={itemVariants}
+          >
+            <h2 className="text-3xl font-bold text-white mb-6">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-orange-300 to-pink-400">
+                ¿Listo para comenzar?
+              </span>
+            </h2>
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Descubre cómo nuestros asistentes de IA pueden transformar tu flujo de trabajo hoy mismo.
+            </p>
+            <Link
+              href="/assistants"
+              className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-purple-500/20"
             >
-              <span className="block">¿Listo para comenzar?</span>
-              <span className="text-blue-200">Explora el poder de la IA hoy mismo.</span>
-            </motion.h2>
-            
-            <motion.p 
-              className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              Únete a miles de usuarios que ya están transformando su productividad con nuestros asistentes de IA.
-            </motion.p>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              <Link
-                href="/chat"
-                className="inline-flex items-center px-8 py-4 bg-white text-blue-700 font-medium rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                Empezar gratis
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </motion.div>
-          </div>
-        </section>
+              Explorar Asistentes
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </motion.div>
+        </motion.section>
 
         {/* About Section */}
-        <section id="about" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+        <motion.section 
+          id="about" 
+          className="mt-32 py-20"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
+                variants={itemVariants}
               >
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                  Potenciando el futuro con <span className="text-blue-400">IA</span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-orange-300 to-pink-400">
+                    Potenciando el futuro con IA
+                  </span>
                 </h2>
-                <div className="h-1 w-20 bg-blue-500 rounded-full mb-8"></div>
+                <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-8"></div>
                 
                 <div className="space-y-6">
                   <p className="text-lg text-gray-300">
-                    En Orbia, estamos comprometidos con el desarrollo de soluciones de inteligencia artificial que ayuden a las personas y empresas a alcanzar su máximo potencial. Nuestra plataforma de asistentes de IA está diseñada para ser intuitiva, poderosa y accesible para todos.
+                    En Orbia, estamos comprometidos con el desarrollo de soluciones de inteligencia artificial que ayuden a las personas y empresas a alcanzar su máximo potencial.
                   </p>
                   <p className="text-lg text-gray-300">
-                    Nuestro equipo de expertos en IA trabaja incansablemente para ofrecerte las herramientas más avanzadas y fáciles de usar, permitiéndote enfocarte en lo que realmente importa.
+                    Nuestra plataforma de asistentes de IA está diseñada para ser intuitiva, poderosa y accesible para todos.
                   </p>
                   
                   <div className="pt-4">
                     <Link 
                       href="#"
-                      className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                      className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium transition-colors group"
                     >
                       Conoce más sobre nosotros
-                      <ArrowRight className="ml-2 w-5 h-5" />
+                      <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </div>
                 </div>
@@ -287,23 +286,45 @@ export default function Home() {
               
               <motion.div
                 className="relative h-96 w-full rounded-2xl overflow-hidden"
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                variants={itemVariants}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl backdrop-blur-sm"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl backdrop-blur-sm"></div>
                 <Image
                   src="/LogosNuevos/orbia_text_transparent.png"
                   alt="Orbia IA"
                   fill
                   className="object-contain p-12"
+                  priority
                 />
               </motion.div>
             </div>
           </div>
-        </section>
-      </div>
+        </motion.section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-900/40 backdrop-blur-sm border-t border-white/10">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="md:flex md:items-center md:justify-between">
+            <div className="flex justify-center md:justify-start space-x-6">
+              <a href="#" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">
+                Términos
+              </a>
+              <a href="#" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">
+                Privacidad
+              </a>
+              <a href="#" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">
+                Contacto
+              </a>
+            </div>
+            <div className="mt-4 md:mt-0 text-center md:text-right">
+              <p className="text-sm text-gray-500">
+                &copy; {new Date().getFullYear()} Orbia. Todos los derechos reservados.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
