@@ -91,14 +91,48 @@ export default function Home() {
       </div>
 
       {/* Contenido principal */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 md:pt-36 md:pb-28">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 md:pt-28 md:pb-28">
         {/* Hero Section */}
         <motion.div 
-          className="text-center mb-24"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Logo Orbia */}
+          <motion.div 
+            className="relative flex items-center justify-center mb-8 mx-auto"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            style={{ width: '500px', height: '500px' }}
+          >
+            {/* Fondo del logo sin texto */}
+            <div className="absolute inset-0">
+              <Image
+                src="/LogosNuevos/logo_orbia_sin_texto.png"
+                alt="Orbia Logo"
+                fill
+                className="object-contain"
+                priority
+                sizes="250px"
+              />
+            </div>
+            
+            {/* Texto Orbia superpuesto */}
+            <div className="absolute" style={{ width: '140%', height: '50%', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              <Image
+                src="/LogosNuevos/orbia_text_transparent.png"
+                alt="Orbia"
+                fill
+                className="object-contain"
+                priority
+                sizes="(max-width: 768px) 350px, 600px"
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+          </motion.div>
+
           <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6"
             initial={{ opacity: 0, y: 20 }}
