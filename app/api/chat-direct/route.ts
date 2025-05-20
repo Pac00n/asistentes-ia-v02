@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     // Verificar API key
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
     if (!apiKey) {
       return NextResponse.json({ error: "API key de OpenAI no configurada" }, { status: 500 })
     }

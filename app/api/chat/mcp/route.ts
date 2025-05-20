@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
     // Crear stream para respuesta
     const { stream, write, writeToolCall, writeToolResult, close } = createStream();
     
-    // Inicializar OpenAI
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    // Inicializar OpenAI con la clave de API pública
+    const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
     
     // Crear la respuesta de streaming
     const response = new Response(stream, {

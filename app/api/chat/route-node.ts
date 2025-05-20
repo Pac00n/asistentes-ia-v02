@@ -24,12 +24,12 @@ export async function POST(req: Request) {
     }
 
     // Inicializar el cliente de OpenAI
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.NEXT_PUBLIC_OPENAI_API_KEY) {
       return NextResponse.json({ error: "API key de OpenAI no configurada" }, { status: 500 })
     }
 
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
     })
 
     // Gestionar el Thread (Hilo)

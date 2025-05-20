@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, ArrowRight, Cpu, MessageCircle } from "lucide-react";
+import { Search, ArrowRight, Cpu, MessageCircle, TrafficCone } from "lucide-react";
 import Image from "next/image";
 // import SmallRotatingLogo from "../components/SmallRotatingLogo"; // Ya no se usará para el fondo principal
 
@@ -18,12 +18,12 @@ interface Assistant {
 
 const assistants: Assistant[] = [
   {
-    id: "openai",
-    title: "Asistente de OpenAI",
-    description: "Chat avanzado con inteligencia artificial de OpenAI para respuestas precisas y detalladas.",
-    icon: <MessageCircle className="w-8 h-8 text-blue-400" />,
-    href: "/chat/openai",
-    color: "from-blue-500 to-blue-600"
+    id: "asistente-senalizacion",
+    title: "Asistente de Señalización",
+    description: "Identifica y explica señales de tráfico con inteligencia artificial.",
+    icon: <TrafficCone className="w-8 h-8 text-yellow-400" />,
+    href: "/chat/asistente-senalizacion",
+    color: "from-yellow-500 to-yellow-600"
   },
   {
     id: "mcp",

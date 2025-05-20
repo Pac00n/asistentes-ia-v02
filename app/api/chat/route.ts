@@ -9,7 +9,7 @@ export const maxDuration = 60;
 
 // --- Cliente OpenAI (inicialización robusta) ---
 let openai: OpenAI | null = null;
-const openAIApiKey = process.env.OPENAI_API_KEY;
+const openAIApiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
 if (openAIApiKey && openAIApiKey.trim() !== "") {
     try {
@@ -19,7 +19,7 @@ if (openAIApiKey && openAIApiKey.trim() !== "") {
         console.error("[API Chat Stream] Falló la inicialización del cliente OpenAI:", e);
     }
 } else {
-    console.warn("[API Chat Stream] OPENAI_API_KEY no está configurada. Los asistentes de OpenAI no funcionarán.");
+    console.warn("[API Chat Stream] NEXT_PUBLIC_OPENAI_API_KEY no está configurada. Los asistentes de OpenAI no funcionarán.");
 }
 // --- Fin Cliente OpenAI ---
 

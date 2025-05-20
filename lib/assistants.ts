@@ -3,6 +3,7 @@
 import {
   Bot, 
   Code, 
+  Cpu,
   Database, 
   FileText, 
   Image as ImageIcon, 
@@ -54,6 +55,14 @@ export const assistants: Assistant[] = [
     description: "Proporciona información sobre señales de tráfico a partir de imágenes o descripciones. Utiliza un asistente de OpenAI especializado.", 
     iconType: TrafficCone, 
     bgColor: "bg-yellow-600", 
+  },
+  {
+    id: "mcp",
+    name: "Asistente MCP",
+    shortDescription: "Asistente personalizado con capacidades avanzadas de procesamiento.",
+    description: "Asistente personalizado con capacidades avanzadas de procesamiento y herramientas especializadas para tareas específicas.",
+    iconType: Cpu,
+    bgColor: "bg-purple-600",
   },
 ];
 
