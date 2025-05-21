@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, ArrowRight, Cpu, MessageCircle, TrafficCone, Hammer } from "lucide-react"; // Added Hammer
+import { Search, ArrowRight, Cpu, MessageCircle, TrafficCone, Hammer, Globe } from "lucide-react"; // Added Globe
 import Image from "next/image";
 
 interface AssistantCardInfo {
@@ -32,6 +32,14 @@ const assistantCards: AssistantCardInfo[] = [
     icon: <Hammer className="w-8 h-8 text-rose-400" />,
     href: "/chat-v3/mcp-v3",
     color: "from-rose-500 to-pink-600"
+  },
+  {
+    id: "mcp-v4",
+    title: "MCP v4",
+    description: "Asistente con herramientas externas MCP para funcionalidades avanzadas.",
+    icon: <Globe className="w-8 h-8 text-blue-400" />,
+    href: "/chat/mcpv4/mcp-v4-tools",
+    color: "from-blue-500 to-indigo-600"
   }
 ];
 
