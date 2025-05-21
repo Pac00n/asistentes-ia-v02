@@ -10,6 +10,16 @@
 This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
 Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
+## 🆕 Integración con Servidores MCP Externos
+
+Se ha implementado y validado la integración real con servidores MCP externos. Ahora el sistema puede:
+
+1. **Descubrir herramientas** de servidores MCP externos mediante llamadas HTTP reales
+2. **Ejecutar herramientas** remotas con argumentos y procesar sus respuestas
+3. **Manejar errores** de forma robusta, con fallback a simulación cuando sea necesario
+
+Para más detalles sobre la implementación y despliegue en producción, consulta la [documentación de despliegue](docs/deployment/README.md).
+
 ## Deployment
 
 Your project is live at:
@@ -87,18 +97,11 @@ To use the Chat MCP v4 with external tool servers, you need to configure the `Mc
   ```
   **Note**: Ensure the JSON is a valid, minified string when setting it as an environment variable, especially in `.env` files or platform configurations.
 
-#### Current Limitations for Chat MCP v4
+#### 🆕 Implementación de Llamadas HTTP Reales
 
--   **Simulated HTTP Calls**: The `McpClient` (`lib/mcp/client.ts`) currently **simulates** the HTTP calls (GET to `/tools` for discovery, POST to server URL for execution) to external MCP servers. The actual `fetch` calls are commented out.
-    -   **Discovery Simulation**: Tool discovery is based on hardcoded examples within `McpClient.ts` (reacting to `server.id` like "srv1", "toolCo", "srvNoTools"). If `MCP_SERVERS_CONFIG` includes servers with other IDs, `McpClient` will attempt to "discover" from them but will find no tools unless its internal simulation is updated.
-    -   **Execution Simulation**: Tool execution also returns hardcoded results based on `server.id` and `originalToolName` matching those in the discovery simulation.
--   **Implementation Status**: This means that while the framework for connecting to external tool servers is in place, it **does not yet perform real network requests** to these servers. Developers wishing to use this with actual external servers will need to:
-    1.  Uncomment the `fetch` calls (or replace with `axios`, etc.) in `McpClient.ts` within the `discoverToolsFromServer` and `executeTool` methods.
-    2.  Remove or adapt the current simulation logic within those methods.
-    3.  Thoroughly test these live integrations.
--   **Error Handling**: Basic error handling for the simulated network requests and data parsing is included but may need to be enhanced for production use with real servers (e.g., more specific error types, retry mechanisms).
+La implementación actual de `McpClient` (`lib/mcp/client.ts`) ahora soporta llamadas HTTP reales a servidores MCP externos. Las llamadas `fetch` para descubrimiento y ejecución de herramientas han sido activadas y probadas con éxito.
 
-This setup allows for local testing and development of the MCP v4 flow without needing live external tool servers, but it's a critical point to understand for anyone trying to deploy or extend this functionality.
+Para más detalles sobre la implementación y cómo desplegar en producción, consulta la [documentación de despliegue](docs/deployment/README.md).
 
 ---
 
@@ -111,7 +114,7 @@ To run this project locally:
 3.  Set up your environment variables:
     *   Create a `.env.local` file in the root of the project.
     *   Add your OpenAI API key: `NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key_here`
-    *   Optionally, for Chat MCP v4, add `MCP_SERVERS_CONFIG` as described above if you intend to modify/test that functionality (keeping in mind the simulation).
+    *   For Chat MCP v4, add `MCP_SERVERS_CONFIG` as described above to connect to external MCP servers.
 4.  Run the development server: `npm run dev`
 5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -120,5 +123,6 @@ The project includes unit and integration tests using Jest.
 - Run all tests: `npm test` (executes `jest`)
 - Run unit tests for `McpClient`: `npx jest tests/unit/mcpClient.test.ts`
 - Run integration tests for MCPv4 API: `npx jest tests/integration/mcpv4Api.test.ts`
+- 🆕 Run integration tests with external MCP server: `node tests/integration/mcpExternalServer.test.js` (requires TypeScript compilation first)
 
 Ensure Jest is configured (`jest.config.js`) and dependencies are installed (`npm install`).
