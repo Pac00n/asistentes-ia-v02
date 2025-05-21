@@ -120,13 +120,13 @@ export default function ChatPage() {
                 ));
               } else if (event.toolCall) {
                 // Mostrar llamada a herramienta
-                const toolCall = event.toolCall.data; // El evento toolCall de nuestra API tiene la data anidada
+                const toolCall = event.toolCall; // El evento toolCall de nuestra API
                 const toolCallContent = `Llamando a herramienta: ${toolCall.name}(${toolCall.arguments})`;
-                 setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'system', content: toolCallContent }]); // Mostrar como mensaje del sistema
+                setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'system', content: toolCallContent }]); // Mostrar como mensaje del sistema
               } else if (event.toolResult) {
                  // Mostrar resultado de herramienta
-                 const toolResult = event.toolResult.data; // El evento toolResult de nuestra API tiene la data anidada
-                 const resultContent = `Resultado de ${toolResult.toolName || 'herramienta'}: ${JSON.stringify(toolResult.result || toolResult.error || toolResult)}`;
+                 const toolResult = event.toolResult; // El evento toolResult de nuestra API
+                 const resultContent = `Resultado de herramienta: ${JSON.stringify(toolResult.result || toolResult.error || toolResult)}`;
                  setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'system', content: resultContent }]); // Mostrar como mensaje del sistema
               } else if (event.type === 'error') { // Manejar errores del stream
                  setError(event.data?.message || "Error en el stream");

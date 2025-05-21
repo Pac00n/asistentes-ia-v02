@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       try {
         // Crear la solicitud a OpenAI con streaming
         const completion = await openai.chat.completions.create({
-          model: "gpt-4o", // o el modelo que prefieras
+          model: "gpt-4o-mini", // Cambiado a gpt-4o-mini según sugerencia
           messages,
           stream: true,
           tools: mcpClient.getOpenAIToolDefinitions(), // <--- CAMBIO AQUÍ
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
               
               // Continuar la conversación con el resultado
               const toolResponse = await openai.chat.completions.create({
-                model: "gpt-4o",
+                model: "gpt-4o-mini", // Cambiado a gpt-4o-mini según sugerencia
                 messages: [
                   ...messages,
                   {
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
               // Continuar la conversación con OpenAI enviando el error de la herramienta
               if (currentToolCall?.id) {
                 const errorToolResponse = await openai.chat.completions.create({
-                  model: "gpt-4o",
+                  model: "gpt-4o-mini", // Cambiado a gpt-4o-mini según sugerencia
                   messages: [
                     ...messages,
                     {
