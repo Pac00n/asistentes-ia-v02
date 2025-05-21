@@ -165,7 +165,9 @@ export default function ChatV3Page() {
 
     try {
       const isMcp = assistantId === 'mcp-v3';
-      const apiUrl = isMcp ? '/api/chat/mcp' : '/api/chat';
+      // Usar la nueva API MCPv4 para el asistente mcp-v3
+      const apiUrl = isMcp ? '/api/chat/mcpv4' : '/api/chat';
+      console.log(`Usando API: ${apiUrl} para asistente: ${assistantId}`);
       
       const response = await fetch(apiUrl, {
         method: "POST",

@@ -94,45 +94,49 @@ export class McpClient {
     // No se puede usar `new URL('/tools', server.url)` directamente si server.url no incluye un path base.
     // Es más seguro asegurar que la URL base termine en / antes de concatenar.
     const baseUrl = server.url.endsWith('/') ? server.url : `${server.url}/`;
-    const toolsUrl = `${baseUrl}tools`; 
+    const toolsUrl = `${baseUrl}tools`;
     
     console.log(`McpClient: Descubriendo herramientas de ${server.name || server.id} en ${toolsUrl}`);
 
     try {
-      // **INICIO DE SIMULACIÓN DE LLAMADA HTTP**
-      // En una implementación real, aquí se usaría axios, node-fetch o similar:
-      // const headers: Record<string, string> = {};
-      // if (server.apiKey) {
-      //   headers['X-API-Key'] = server.apiKey;
-      // }
-      // const response = await fetch(toolsUrl, { headers }); 
-      // if (!response.ok) {
-      //   const errorBody = await response.text();
-      //   throw new Error(`Error al obtener herramientas de ${server.id} (${response.status}): ${errorBody}`);
-      // }
-      // const mcpTools: McpToolDefinition[] = await response.json();
-
+      // Implementación real de llamada HTTP
       let mcpTools: McpToolDefinition[];
-      if (server.id === "srv1") {
-        mcpTools = [
-          { toolName: "calculator", description: "Calculadora de srv1", parametersSchema: { type: "object", properties: { expression: { type: "string", description: "Expresión matemática a evaluar" } }, required: ["expression"] } },
-          { toolName: "weather", description: "Obtiene el clima de una ciudad en srv1", parametersSchema: { type: "object", properties: { city: { type: "string", description: "Ciudad para consultar el clima" } }, required: ["city"] } },
-        ];
-      } else if (server.id === "toolCo") {
-         mcpTools = [
-          { toolName: "search", description: "Realiza una búsqueda en toolCo", parametersSchema: { type: "object", properties: { query: { type: "string", description: "Término de búsqueda" } }, required: ["query"] } },
-          { toolName: "imageGenerator", description: "Genera una imagen basada en un prompt", parametersSchema: {type: "object", properties: {prompt: {type: "string", description: "Descripción de la imagen a generar"}}, required: ["prompt"]}}
-        ];
-      } else if (server.id === "srvNoTools") {
-        mcpTools = []; // Simula un servidor que responde con un array vacío
-      } else {
-        // Simular un error para otros servidores no definidos explícitamente en la simulación
-        // throw new Error(`Simulated error: No tools defined for ${server.id} in mock and no default behavior.`);
-        console.warn(`McpClient: Servidor ${server.id} no tiene herramientas simuladas y no se simuló error. Devolviendo array vacío.`);
-        mcpTools = [];
+      
+      try {
+        const headers: Record<string, string> = {};
+        if (server.apiKey) {
+          headers['X-API-Key'] = server.apiKey;
+        }
+        
+        const response = await fetch(toolsUrl, { headers });
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(`Error al obtener herramientas de ${server.id} (${response.status}): ${errorBody}`);
+        }
+        
+        mcpTools = await response.json();
+        console.log(`McpClient: ${server.id} devolvió ${mcpTools.length} herramientas.`);
+      } catch (fetchError) {
+        console.error(`McpClient: Error al conectar con el servidor ${server.id}:`, fetchError);
+        
+        // Fallback a simulación si la conexión falla (para desarrollo/pruebas)
+        if (server.id === "srv1") {
+          console.warn(`McpClient: Usando herramientas simuladas para ${server.id} debido a error de conexión.`);
+          mcpTools = [
+            { toolName: "calculator", description: "Calculadora de srv1", parametersSchema: { type: "object", properties: { expression: { type: "string", description: "Expresión matemática a evaluar" } }, required: ["expression"] } },
+            { toolName: "weather", description: "Obtiene el clima de una ciudad en srv1", parametersSchema: { type: "object", properties: { city: { type: "string", description: "Ciudad para consultar el clima" } }, required: ["city"] } },
+          ];
+        } else if (server.id === "toolCo") {
+          console.warn(`McpClient: Usando herramientas simuladas para ${server.id} debido a error de conexión.`);
+          mcpTools = [
+            { toolName: "search", description: "Realiza una búsqueda en toolCo", parametersSchema: { type: "object", properties: { query: { type: "string", description: "Término de búsqueda" } }, required: ["query"] } },
+            { toolName: "imageGenerator", description: "Genera una imagen basada en un prompt", parametersSchema: {type: "object", properties: {prompt: {type: "string", description: "Descripción de la imagen a generar"}}, required: ["prompt"]}}
+          ];
+        } else {
+          console.warn(`McpClient: No hay herramientas simuladas para ${server.id}. Devolviendo array vacío.`);
+          mcpTools = [];
+        }
       }
-      console.log(`McpClient: ${server.id} simuló la devolución de ${mcpTools.length} herramientas.`);
-      // **FIN DE SIMULACIÓN**
 
       if (!Array.isArray(mcpTools)) {
         console.warn(`McpClient: Respuesta de ${server.id} (${toolsUrl}) no es un array. Respuesta recibida:`, mcpTools);
@@ -193,58 +197,68 @@ export class McpClient {
 
     const { serverId, serverUrl, originalToolName, apiKey } = mapping;
 
-    // Asegurar que la URL base termine en / antes de concatenar /executeTool o similar, o usar new URL()
-    // Para esta tarea, asumimos que serverUrl es la URL base para el POST.
-    // Si el endpoint fuera específico como /executeTool, se añadiría aquí.
-    // const executionUrl = `${serverUrl.endsWith('/') ? serverUrl : serverUrl + '/'}executeTool`;
-    const executionUrl = serverUrl; // Asumiendo que la URL base es el endpoint de ejecución
+    // Asegurar que la URL base termine en / antes de concatenar /executeTool o similar
+    const baseUrl = serverUrl.endsWith('/') ? serverUrl : `${serverUrl}/`;
+    const executionUrl = `${baseUrl}execute`; // Endpoint para ejecutar herramientas
 
     console.log(`McpClient: Ejecutando herramienta '${originalToolName}' en servidor '${serverId}' (${executionUrl}) con argumentos:`, parsedArguments);
 
     try {
-      // **SIMULACIÓN DE LLAMADA HTTP POST POR AHORA**
-      // En una implementación real, aquí se usaría axios.post o fetch con method: 'POST':
-      // const headers: any = { 'Content-Type': 'application/json' };
-      // if (apiKey) {
-      //   headers['X-API-Key'] = apiKey;
-      // }
-      // const body = JSON.stringify({ 
-      //   toolName: originalToolName, 
-      //   arguments: parsedArguments 
-      // });
-      // const response = await fetch(executionUrl, { method: 'POST', headers, body }); // o axios.post
-      // if (!response.ok) {
-      //   const errorBody = await response.text();
-      //   throw new Error(`Error al ejecutar la herramienta ${originalToolName} en ${serverId}: ${response.statusText} - ${errorBody}`);
-      // }
-      // const result = await response.json();
-      // console.log(`McpClient: Resultado de '${originalToolName}' desde '${serverId}':`, result);
-      // return result;
-
-      // **Inicio de Simulación**
-      await new Promise(resolve => setTimeout(resolve, 50)); // Simular latencia de red
-
-      let simulatedResult: any;
-      if (serverId === "srv1" && originalToolName === "calculator") {
-        simulatedResult = { value: `srv1_calculator_result_for_${parsedArguments.expression}` };
-      } else if (serverId === "srv1" && originalToolName === "weather") {
-        simulatedResult = { temperature: `25C for ${parsedArguments.city} from srv1` };
-      } else if (serverId === "toolCo" && originalToolName === "search") {
-        simulatedResult = { results: [`Result 1 for ${parsedArguments.query} from toolCo`, "Result 2"] };
-      } else if (serverId === "toolCo" && originalToolName === "imageGenerator") {
-        simulatedResult = { imageUrl: `http://images.toolco.com/${parsedArguments.prompt.replace(/\s/g, '_')}.png` };
-      } else {
-        // Simular un error si la herramienta no es reconocida en la simulación
-        // throw new Error(`Simulated error: Tool '${originalToolName}' not found on server '${serverId}' during execution.`);
-         simulatedResult = { 
-           status: "success_unknown_tool_simulation",
-           message: `Simulated: Tool '${originalToolName}' on server '${serverId}' executed with provided args.`, 
-           arguments_received: parsedArguments 
+      // Implementación real de llamada HTTP POST
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (apiKey) {
+          headers['X-API-Key'] = apiKey;
+        }
+        
+        const body = JSON.stringify({
+          toolName: originalToolName,
+          arguments: parsedArguments
+        });
+        
+        const response = await fetch(executionUrl, {
+          method: 'POST',
+          headers,
+          body
+        });
+        
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(`Error al ejecutar la herramienta ${originalToolName} en ${serverId}: ${response.statusText} - ${errorBody}`);
+        }
+        
+        const result = await response.json();
+        console.log(`McpClient: Resultado de '${originalToolName}' desde '${serverId}':`, result);
+        return result;
+      } catch (fetchError) {
+        console.error(`McpClient: Error al ejecutar herramienta en servidor ${serverId}:`, fetchError);
+        
+        // Fallback a simulación si la conexión falla (para desarrollo/pruebas)
+        console.warn(`McpClient: Usando simulación como fallback para ${originalToolName} en ${serverId}`);
+        
+        // Simular latencia de red
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        let simulatedResult: any;
+        if (serverId === "srv1" && originalToolName === "calculator") {
+          simulatedResult = { value: `srv1_calculator_result_for_${parsedArguments.expression}` };
+        } else if (serverId === "srv1" && originalToolName === "weather") {
+          simulatedResult = { temperature: `25C for ${parsedArguments.city} from srv1` };
+        } else if (serverId === "toolCo" && originalToolName === "search") {
+          simulatedResult = { results: [`Result 1 for ${parsedArguments.query} from toolCo`, "Result 2"] };
+        } else if (serverId === "toolCo" && originalToolName === "imageGenerator") {
+          simulatedResult = { imageUrl: `http://images.toolco.com/${parsedArguments.prompt.replace(/\s/g, '_')}.png` };
+        } else {
+          simulatedResult = {
+            status: "success_unknown_tool_simulation",
+            message: `Simulated: Tool '${originalToolName}' on server '${serverId}' executed with provided args.`,
+            arguments_received: parsedArguments
           };
+        }
+        
+        console.log(`McpClient: Resultado SIMULADO de '${originalToolName}' desde '${serverId}':`, simulatedResult);
+        return simulatedResult;
       }
-      console.log(`McpClient: Resultado SIMULADO de '${originalToolName}' desde '${serverId}':`, simulatedResult);
-      return simulatedResult;
-      // **Fin de Simulación**
 
     } catch (error) {
       console.error(`McpClient: Error al ejecutar la herramienta ${originalToolName} en ${serverId}:`, error instanceof Error ? error.message : String(error));

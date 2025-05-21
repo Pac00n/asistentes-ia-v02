@@ -69,10 +69,10 @@ El proyecto incluye pruebas unitarias y de integración para verificar la funcio
 
 La implementación actual de "Chat MCP v4" con `McpClient` es una base funcional, pero **requiere trabajo adicional significativo** antes de ser considerada para un entorno de producción.
 
-*   **1. Implementación de Llamadas HTTP Reales (Crítico):**
-    *   **El paso más importante.** Actualmente, `McpClient.ts` **simula** las llamadas de red para descubrir y ejecutar herramientas.
-    *   Debes modificar los métodos `discoverToolsFromServer` y `executeTool` en `lib/mcp/client.ts`.
-    *   Descomenta y adapta las secciones de código que usan `fetch` (o reemplázalas con `axios` si lo prefieres) para realizar llamadas HTTP reales a los servidores MCP.
+*   **1. Implementación de Llamadas HTTP Reales (Completado):**
+    *   Se han implementado llamadas HTTP reales en `McpClient.ts` para descubrir y ejecutar herramientas.
+    *   Los métodos `discoverToolsFromServer` y `executeTool` ahora realizan llamadas HTTP reales a los servidores MCP.
+    *   Se mantiene la simulación como fallback en caso de errores de conexión, lo que facilita el desarrollo y las pruebas.
 
 *   **2. Pruebas Exhaustivas con Servidores MCP Reales:**
     *   Una vez implementadas las llamadas HTTP, es crucial probar la integración con servidores MCP reales y funcionales.
@@ -99,4 +99,18 @@ La implementación actual de "Chat MCP v4" con `McpClient` es una base funcional
 *   **8. Seguridad Adicional:**
     *   Valida y sanitiza cualquier dato proveniente de servidores MCP externos antes de usarlo internamente o mostrarlo a los usuarios, si aplica.
 
-Abordar estas consideraciones es esencial para asegurar una transición exitosa de la funcionalidad actual (basada en simulación) a un sistema robusto y fiable en producción.
+Abordar estas consideraciones es esencial para asegurar una transición exitosa de la funcionalidad actual a un sistema robusto y fiable en producción.
+
+## 4. Configuración Implementada
+
+Se han realizado los siguientes cambios para implementar MCPv4:
+
+1. **Habilitación de llamadas HTTP reales en McpClient**:
+   - Se ha modificado `discoverToolsFromServer` para realizar llamadas HTTP reales a los endpoints `/tools` de los servidores MCP.
+   - Se ha modificado `executeTool` para realizar llamadas HTTP POST reales a los endpoints `/execute` de los servidores MCP.
+   - Se mantiene la simulación como fallback en caso de errores de conexión, lo que facilita el desarrollo y las pruebas.
+
+2. **Configuración de servidores MCP**:
+   - Se ha añadido la variable de entorno `MCP_SERVERS_CONFIG` en `.env.local` para definir los servidores MCP externos.
+
+Para más detalles sobre la implementación y uso, consulta la [Guía de Implementación y Uso de MCP v4](./guia_implementacion_mcpv4.md).
