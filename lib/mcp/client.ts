@@ -143,6 +143,22 @@ export class McpClient {
             { toolName: "search", description: "Realiza una búsqueda en toolCo", parametersSchema: { type: "object", properties: { query: { type: "string", description: "Término de búsqueda" } }, required: ["query"] } },
             { toolName: "imageGenerator", description: "Genera una imagen basada en un prompt", parametersSchema: {type: "object", properties: {prompt: {type: "string", description: "Descripción de la imagen a generar"}}, required: ["prompt"]}}
           ];
+        } else if (server.id === "brave-search") {
+          console.warn(`McpClient: Usando herramientas simuladas para ${server.id} debido a error de conexión.`);
+          mcpTools = [
+            { toolName: "brave_web_search", description: "Búsqueda web simulada con Brave.", parametersSchema: { type: "object", properties: { query: { type: "string", description: "Término de búsqueda" } }, required: ["query"] } },
+            { toolName: "brave_local_search", description: "Búsqueda local simulada con Brave.", parametersSchema: { type: "object", properties: { query: { type: "string", description: "Término de búsqueda local" }, location: { type: "string", description: "Ubicación para la búsqueda" } }, required: ["query", "location"] } },
+          ];
+        } else if (server.id === "exa-local") {
+          console.warn(`McpClient: Usando herramientas simuladas para ${server.id} debido a error de conexión.`);
+          mcpTools = [
+            { toolName: "web_search", description: "Búsqueda web general con Exa.", parametersSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+            { toolName: "research_paper_search", description: "Busca papers académicos.", parametersSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+            { toolName: "twitter_search", description: "Busca en Twitter/X.", parametersSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
+            { toolName: "company_research", description: "Investiga sobre empresas.", parametersSchema: { type: "object", properties: { company_name_or_domain: { type: "string" } }, required: ["company_name_or_domain"] } },
+            { toolName: "crawling", description: "Extrae contenido de URLs.", parametersSchema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] } },
+            { toolName: "competitor_finder", description: "Identifica competidores.", parametersSchema: { type: "object", properties: { company_name_or_domain: { type: "string" } }, required: ["company_name_or_domain"] } },
+          ];
         } else {
           console.warn(`McpClient: No hay herramientas simuladas para ${server.id}. Devolviendo array vacío.`);
           mcpTools = [];
@@ -259,7 +275,29 @@ export class McpClient {
           simulatedResult = { results: [`Result 1 for ${parsedArguments.query} from toolCo`, "Result 2"] };
         } else if (serverId === "toolCo" && originalToolName === "imageGenerator") {
           simulatedResult = { imageUrl: `http://images.toolco.com/${parsedArguments.prompt.replace(/\s/g, '_')}.png` };
-        } else {
+        } else if (serverId === "brave-search" && originalToolName === "brave_web_search") {
+          simulatedResult = { search_results: [`Resultado simulado de Brave Web Search para: ${parsedArguments.query}`] };
+        } else if (serverId === "brave-search" && originalToolName === "brave_local_search") {
+          simulatedResult = { local_search_results: [`Resultado simulado de Brave Local Search para: ${parsedArguments.query} en ${parsedArguments.location}`] };
+        } else if (serverId === "exa-local" && originalToolName === "web_search") {
+          simulatedResult = { results: [`Resultado simulado de Exa Web Search para: ${parsedArguments.query}`] };
+        } else if (serverId === "exa-local" && originalToolName === "research_paper_search") {
+          simulatedResult = { papers: [`Paper simulado de Exa sobre: ${parsedArguments.query}`] };
+        } else if (serverId === "exa-local" && originalToolName === "twitter_search") {
+          simulatedResult = { tweets: [`Tweet simulado de Exa sobre: ${parsedArguments.query}`] };
+        } else if (serverId === "exa-local" && originalToolName === "company_research") {
+          simulatedResult = { company_info: `Información simulada de Exa sobre la empresa: ${parsedArguments.company_name_or_domain}` };
+        } else if (serverId === "exa-local" && originalToolName === "crawling") {
+          simulatedResult = { content: `Contenido simulado de Exa extraído de: ${parsedArguments.url}` };
+        } else if (serverId === "exa-local" && originalToolName === "competitor_finder") {
+          simulatedResult = { competitors: [`Competidor simulado de Exa para: ${parsedArguments.company_name_or_domain}`] };
+        } else if (serverId === "exa" && originalToolName === "search") { // Manteniendo el antiguo 'exa' por si acaso, aunque deberíamos migrar a 'exa-local'
+          simulatedResult = { search_results: [`Resultado simulado de Exa Search para: ${parsedArguments.query}`] };
+        } else if (serverId === "exa" && originalToolName === "find_similar") {
+          simulatedResult = { similar_results: [`Contenido similar simulado por Exa para el texto/URL proporcionado.`] };
+        } else if (serverId === "exa" && originalToolName === "get_contents") {
+          simulatedResult = { contents: [`Contenido simulado obtenido por Exa para las URLs proporcionadas.`] };
+        } else { // Este es el else original para casos no cubiertos explícitamente
           simulatedResult = {
             status: "success_unknown_tool_simulation",
             message: `Simulated: Tool '${originalToolName}' on server '${serverId}' executed with provided args.`,

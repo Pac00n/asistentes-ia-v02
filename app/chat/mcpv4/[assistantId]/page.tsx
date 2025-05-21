@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { Hammer, ChevronDown, ChevronUp } from "lucide-react"; // Importar iconos
 
 // Tipos mínimos
 interface ChatMessage { id: string; role: "user" | "assistant" | "tool" | "system"; content: string; isStreaming?: boolean; }
 interface ToolCall { id: string; name: string; arguments: string } // Arguments as string from OpenAI
-
 export default function ChatPage() {
   const { assistantId } = useParams<{ assistantId: string }>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -16,11 +16,48 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null); // Añadido para mostrar errores
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamControllerRef = useRef<AbortController | null>(null); // Para cancelar stream
+  const [availableTools, setAvailableTools] = useState<any[]>([]); // Estado para herramientas
+  const [showTools, setShowTools] = useState(false); // Estado para mostrar/ocultar desplegable
 
   // Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Obtener herramientas disponibles al cargar la página
+  useEffect(() => {
+    const fetchTools = async () => {
+      try {
+        // Simulación de obtención de herramientas
+        // En un caso real, esto vendría del backend o de una llamada a la API
+        // Actualizado para las herramientas reales de Exa MCP Server
+        const simulatedTools = [
+          { name: "exa-local_web_search", description: "Búsqueda web general con Exa." },
+          { name: "exa-local_research_paper_search", description: "Busca papers académicos y de investigación." },
+          { name: "exa-local_twitter_search", description: "Encuentra tweets, perfiles y conversaciones en Twitter/X." },
+          { name: "exa-local_company_research", description: "Investiga información detallada sobre empresas." },
+          { name: "exa-local_crawling", description: "Extrae contenido de URLs específicas (artículos, PDFs, etc.)." },
+          { name: "exa-local_competitor_finder", description: "Identifica competidores de una empresa." }
+        ];
+        setAvailableTools(simulatedTools);
+      } catch (e) {
+        console.error("Error fetching available tools:", e);
+      }
+    };
+    fetchTools();
+  }, []);
+
+  // Efecto para actualizar herramientas cuando el stream envía información de herramientas
+  // Esto es una aproximación, ya que el stream actual no envía la lista completa de herramientas,
+  // sino llamadas y resultados. Para una lista completa, se necesitaría un mecanismo diferente.
+  useEffect(() => {
+    // Este efecto es más conceptual. La lógica real para obtener la lista de herramientas
+    // debería ser más robusta, por ejemplo, una llamada inicial al cargar el componente.
+    // Si el backend pudiera enviar la lista de herramientas al inicio del stream, aquí se podría procesar.
+    // Por ahora, vamos a simular que las herramientas se obtienen de alguna manera.
+    // Si el objeto `event.toolCall` o `event.toolResult` contuviera la lista completa,
+    // podríamos usarla aquí.
+  }, [messages]); // Re-evaluar si los mensajes cambian (podría ser una fuente de herramientas)
 
   // Enviar mensaje a /api/chat/mcpv4
   const sendMessage = useCallback(async () => {
@@ -166,8 +203,38 @@ export default function ChatPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-950 text-white">
-      {/* Cabecera simple */}
-      <header className="p-4 border-b border-white/10">Assistant <span className="font-bold">{assistantId}</span></header>
+      {/* Cabecera con contador de herramientas */}
+      <header className="p-4 border-b border-white/10 flex justify-between items-center">
+        <div>Assistant <span className="font-bold">{assistantId}</span></div>
+        <div className="relative">
+          <button
+            onClick={() => setShowTools(!showTools)}
+            className="flex items-center p-2 rounded hover:bg-gray-700 transition-colors"
+            title="Herramientas disponibles"
+          >
+            <Hammer className="w-5 h-5 mr-2" />
+            <span>{availableTools.length}</span> {/* Aquí iría el número real de herramientas */}
+            {showTools ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+          </button>
+          {showTools && (
+            <div className="absolute right-0 mt-2 w-72 bg-gray-800 border border-gray-700 rounded-md shadow-lg z-10 p-2">
+              <h3 className="text-sm font-semibold mb-2 px-2">Herramientas Disponibles:</h3>
+              {availableTools.length > 0 ? (
+                <ul className="max-h-60 overflow-y-auto text-sm">
+                  {availableTools.map((tool, index) => (
+                    <li key={index} className="p-2 hover:bg-gray-700 rounded">
+                      <p className="font-medium">{tool.name || 'Herramienta sin nombre'}</p>
+                      <p className="text-xs text-gray-400">{tool.description || 'Sin descripción.'}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-400 px-2">No hay herramientas disponibles o no se pudieron cargar.</p>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
 
       {/* Área de mensajes */}
       <section className="flex-1 overflow-y-auto p-4 space-y-2">
