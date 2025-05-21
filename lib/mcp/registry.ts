@@ -3,6 +3,7 @@ import { searchTool } from "./tools/search";
 import { calculatorTool } from "./tools/calculator";
 import { currencyTool } from "./tools/currency";
 import { newsTool } from "./tools/news";
+import { echoTool } from "./tools/echoTool";
 
 // Registro central de herramientas
 export const registry = {
@@ -11,14 +12,16 @@ export const registry = {
     searchTool, 
     calculatorTool, 
     currencyTool, 
-    newsTool
+    newsTool,
+    echoTool,
   ],
   toolsMeta: [
     weatherTool.meta, 
     searchTool.meta, 
     calculatorTool.meta, 
     currencyTool.meta, 
-    newsTool.meta
+    newsTool.meta,
+    echoTool.meta,
   ],
 };
 
