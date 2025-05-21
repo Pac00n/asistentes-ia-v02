@@ -96,29 +96,40 @@ export class McpClient {
     const baseUrl = server.url.endsWith('/') ? server.url : `${server.url}/`;
     const toolsUrl = `${baseUrl}tools`;
     
-    console.log(`McpClient: Descubriendo herramientas de ${server.name || server.id} en ${toolsUrl}`);
-
+    console.log(`McpClient: Intentando descubrir herramientas de ${server.name || server.id} en ${toolsUrl}`);
+    
     try {
       // Implementación real de llamada HTTP
       let mcpTools: McpToolDefinition[];
-      
+    
       try {
         const headers: Record<string, string> = {};
         if (server.apiKey) {
           headers['X-API-Key'] = server.apiKey;
         }
-        
+    
         const response = await fetch(toolsUrl, { headers });
+        
+        console.log(`McpClient: Respuesta recibida de ${server.id} (${toolsUrl}). Estado: ${response.status}, Content-Type: ${response.headers.get('content-type')}`);
+    
         if (!response.ok) {
           const errorBody = await response.text();
+          console.error(`McpClient: Error en la respuesta de ${server.id} (${toolsUrl}). Cuerpo del error:`, errorBody);
           throw new Error(`Error al obtener herramientas de ${server.id} (${response.status}): ${errorBody}`);
         }
         
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+           const responseBody = await response.text(); // Leer cuerpo para depuración
+           console.error(`McpClient: Tipo de contenido inesperado de ${server.id} (${toolsUrl}). Cuerpo recibido:`, responseBody);
+           throw new Error(`Tipo de contenido inesperado de ${server.id}: ${contentType}. Se esperaba application/json.`);
+        }
+    
         mcpTools = await response.json();
         console.log(`McpClient: ${server.id} devolvió ${mcpTools.length} herramientas.`);
       } catch (fetchError) {
-        console.error(`McpClient: Error al conectar con el servidor ${server.id}:`, fetchError);
-        
+        console.error(`McpClient: Error al conectar o procesar respuesta del servidor ${server.id} (${toolsUrl}):`, fetchError);
+    
         // Fallback a simulación si la conexión falla (para desarrollo/pruebas)
         if (server.id === "srv1") {
           console.warn(`McpClient: Usando herramientas simuladas para ${server.id} debido a error de conexión.`);
@@ -137,24 +148,24 @@ export class McpClient {
           mcpTools = [];
         }
       }
-
+    
       if (!Array.isArray(mcpTools)) {
         console.warn(`McpClient: Respuesta de ${server.id} (${toolsUrl}) no es un array. Respuesta recibida:`, mcpTools);
         return;
       }
-
+    
       for (const mcpTool of mcpTools) {
         if (mcpTool && typeof mcpTool.toolName === 'string' && typeof mcpTool.description === 'string' && mcpTool.parametersSchema) {
           const prefixedToolName = `${server.id}_${mcpTool.toolName}`;
-          
+    
           // Validar que el nombre de la herramienta no contenga caracteres no permitidos por OpenAI.
           // OpenAI function names must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
           const openAICompatibleName = prefixedToolName.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64);
-
+    
           if (openAICompatibleName !== prefixedToolName) {
             console.warn(`McpClient: El nombre de herramienta '${prefixedToolName}' fue ajustado a '${openAICompatibleName}' para compatibilidad con OpenAI.`);
           }
-          
+    
           this.openAITools.push({
             type: "function",
             function: {
@@ -163,7 +174,7 @@ export class McpClient {
               parameters: mcpTool.parametersSchema,
             },
           });
-
+    
           this.toolMappings[openAICompatibleName] = {
             serverId: server.id,
             serverUrl: server.url,
@@ -176,7 +187,7 @@ export class McpClient {
       }
     } catch (error) {
       // Captura errores tanto de la simulación (si se lanza un error) como de la lógica de procesamiento.
-      console.error(`McpClient: Error al descubrir/procesar herramientas de ${server.id} (${toolsUrl}):`, error instanceof Error ? error.message : String(error));
+      console.error(`McpClient: Error general al descubrir/procesar herramientas de ${server.id} (${toolsUrl}):`, error instanceof Error ? error.message : String(error));
     }
   }
 
