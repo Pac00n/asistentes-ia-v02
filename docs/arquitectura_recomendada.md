@@ -4,6 +4,8 @@
 
 La arquitectura propuesta para integrar el Model Context Protocol (MCP) en la plataforma web de gestión de asistentes virtuales se basa en un diseño modular y escalable que aprovecha las capacidades de MCP para mejorar la conectividad entre asistentes y herramientas externas.
 
+**Nota de Implementación Actual:** Una primera versión del **Cliente MCP** (`lib/mcp/client.ts`) y un **Adaptador MCP** (implícito en la ruta API `/api/chat/mcpv4` y `McpClient`) ha sido implementada. Esta versión permite la conexión a servidores MCP externos configurados mediante la variable de entorno `MCP_SERVERS_CONFIG`. Sin embargo, es importante destacar que las llamadas HTTP reales a estos servidores externos están **actualmente simuladas** dentro de `McpClient.ts`. La infraestructura para la configuración y el flujo está establecida, pero la comunicación de red real necesita ser descomentada/implementada y probada.
+
 ## Componentes Principales
 
 ### 1. Capa de Aplicación Web (Frontend)
